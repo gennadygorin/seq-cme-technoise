@@ -85,7 +85,7 @@ def inference_workflow(input_param_file):
 		print('Parallelization done!')
 	else:
 		print('Starting search...')
-		for i in point_list:
+		for i in search_data.point_list:
 			parout(search_data,i)
 		print('Loop done!')
 
