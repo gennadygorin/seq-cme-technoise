@@ -45,7 +45,7 @@ def param_parser(inputfile):
     polyA_threshold, transcriptome_ind, filter_param, all_prev_results, attribute_names,\
     gene_sel_seed, n_gen, loom_index, gene_result_list, phys_lb, phys_ub, search_restarts,\
     init_pattern, use_lengths, maxiter, n_pt1,n_pt2,samp_lb, samp_ub, ID_suffix, creator, NCOR,\
-
+    date_override
 
 def read_split(f):
 	L = f.readline()
