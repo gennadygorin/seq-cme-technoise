@@ -86,7 +86,7 @@ def inference_workflow(input_param_file):
 	else:
 		print('Starting search...')
 		for i in search_data.point_list:
-			parout(search_data,i)
+			grid_search_driver(search_data,i)
 		print('Loop done!')
 
 	grid_search_driver(search_data)
