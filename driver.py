@@ -81,11 +81,11 @@ def inference_workflow(input_param_file):
 		print('Gene set selected!')
 		namestr=creator+'_'+datestr+'_'
 		with open(namestr+'filtered_genes.csv','w') as f:
-        	writer = csv.writer(f)
-      		writer.writerow(trunc_gene_set)
+			writer = csv.writer(f)
+			writer.writerow(trunc_gene_set)
 		with open(namestr+'selected_genes.csv','w') as f:
-        	writer = csv.writer(f)
-      		writer.writerow(gene_set)
+			writer = csv.writer(f)
+			writer.writerow(gene_set)
 
 
 	if len(gene_result_list)>0:
