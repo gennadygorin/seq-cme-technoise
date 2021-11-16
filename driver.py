@@ -93,10 +93,10 @@ def inference_workflow(input_param_file):
 		if gene_result_list[0][-3:]=='csv':
 			with open(gene_result_list[0], newline='') as f:
 				reader = csv.reader(f)
-				gene_set = list(reader)
+				gene_set = list(reader)[0]
 			with open(gene_result_list[1], newline='') as f:
 				reader = csv.reader(f)
-				trunc_gene_set = list(reader)
+				trunc_gene_set = list(reader)[0]
 		else:
 			result_data = import_datasets(gene_result_list)
 			gene_set = result_data.gene_names
