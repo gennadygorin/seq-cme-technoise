@@ -74,13 +74,20 @@ def inference_workflow(input_param_file):
 	file_string = create_dir(search_data,result_directory,ID_suffix,meta=datasets[IND],creator=creator)
 
 	search_data.get_pts()
-	print('starting search...')
+
 	t1 = time.time()
-	pool=multiprocessing.Pool(processes=NCOR)
-	pool.map(parout,zip([search_data]*len(search_data.point_list),search_data.point_list))
-	pool.close()
-	pool.join()
-	print('Parallelization done!')
+	if NCOR>1:
+		print('starting search...')
+		pool=multiprocessing.Pool(processes=NCOR)
+		pool.map(parout,zip([search_data]*len(search_data.point_list),search_data.point_list))
+		pool.close()
+		pool.join()
+		print('Parallelization done!')
+	else:
+		print('starting search...')
+		map(parout,zip([search_data]*len(search_data.point_list),search_data.point_list))
+		print('Iteration done!')
+
 	grid_search_driver(search_data)
 	t2 = time.time()
 	print('Runtime: {:.1f} min.'.format((t2-t1)/60))
