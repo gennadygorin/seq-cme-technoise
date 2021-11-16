@@ -77,16 +77,17 @@ def inference_workflow(input_param_file):
 
 	t1 = time.time()
 	if NCOR>1:
-		print('starting search...')
+		print('Starting search...')
 		pool=multiprocessing.Pool(processes=NCOR)
 		pool.map(parout,zip([search_data]*len(search_data.point_list),search_data.point_list))
 		pool.close()
 		pool.join()
 		print('Parallelization done!')
 	else:
-		print('starting search...')
-		map(parout,zip([search_data]*len(search_data.point_list),search_data.point_list))
-		print('Iteration done!')
+		print('Starting search...')
+		for i in point_list:
+			parout(search_data,i)
+		print('Loop done!')
 
 	grid_search_driver(search_data)
 	t2 = time.time()
