@@ -68,12 +68,13 @@ def inference_workflow(input_param_file):
 	
 	len_dict = get_transcriptome(transcriptome_filename)[transcriptome_ind]
 	datestr = (date.today().strftime("%y%m%d") if date_override is None else date_override)
+	loom_filenames = [dataset_directory+k+'.loom' for k in datasets] #loom file
+	print(loom_filenames)
 
 	if IND==-1 or len(gene_result_list)==0:
 		#This performs gene selection, either as a "dry run" (IND=-1) or as the preliminary to a fit (IND>=0).
 		print('Beginning preprocessing routine:')
-		loom_filenames = [dataset_directory+k+'.loom' for k in datasets] #loom file
-		print(loom_filenames)
+		
 		gene_set,trunc_gene_set = select_gene_set(loom_filenames,
 		                      len_dict,viz=False,
 		                          results_to_exclude=all_prev_results,seed=gene_sel_seed,n_gen=n_gen,
