@@ -515,10 +515,11 @@ def select_gene_set(loom_filepaths,feat_dict,viz=False,
         #     attr_names = [spliced_layer,unspliced_layer,gene_attr,cell_attr]
         # else:
         #     attr_names = [spliced_layer[i_data],unspliced_layer[i_data],gene_attr[i_data],cell_attr[i_data]]
-        if all(isinstance(x, list) for x in attr_names_in):
+        # if all(isinstance(x, list) for x in attr_names_in):
+        if len(attr_names_in)>1
             attr_names = attr_names_in[i_data]
         else:
-            attr_names = attr_names_in
+            attr_names = attr_names_in[0]
 
         S,U,gene_names,Ncells = import_vlm(loom_filepath,*attr_names)
         #check which genes are represented in the dataset
