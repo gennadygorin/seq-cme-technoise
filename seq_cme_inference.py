@@ -516,7 +516,7 @@ def select_gene_set(loom_filepaths,feat_dict,viz=False,
         # else:
         #     attr_names = [spliced_layer[i_data],unspliced_layer[i_data],gene_attr[i_data],cell_attr[i_data]]
         # if all(isinstance(x, list) for x in attr_names_in):
-        if len(attr_names_in)>1
+        if len(attr_names_in)>1:
             attr_names = attr_names_in[i_data]
         else:
             attr_names = attr_names_in[0]
