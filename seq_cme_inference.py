@@ -485,7 +485,7 @@ def import_vlm(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr):
 
 def select_gene_set(loom_filepaths,feat_dict,viz=False,
                           results_to_exclude=[],seed=6,n_gen=10,
-                          filt_param=(0.01,0.01,350,350,4,4),aesthetics=((12,4),0.15,3,"Spectral"),
+                          filt_param=(0.01,0.01,350,350,4,4,1),aesthetics=((12,4),0.15,3,"Spectral"),
                             attr_names_in=['spliced','unspliced','Gene','CellID']):
     """
     Examines a set of .loom files and selects a set of genes. Inputs:
@@ -558,7 +558,10 @@ def select_gene_set(loom_filepaths,feat_dict,viz=False,
                 ax1[i].set_ylabel('log10 (mean '+var_name[i]+' + 0.001)')
         
         #plot genes in high-expression cluster
-        gene_filter = np.array(gene_cluster_labels,dtype=bool)
+        if int(filt_param[-1]) is not -1:
+            gene_filter = np.array(gene_cluster_labels,dtype=bool)
+        else:
+            gene_filter = np.ones(Ncells,dtype=bool)
         if viz:
             fig2, ax2 = plt.subplots(nrows=1,ncols=2,figsize=sz)
             for i in range(2):
