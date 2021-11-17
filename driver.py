@@ -76,7 +76,7 @@ def inference_workflow(input_param_file):
 		print('Beginning preprocessing routine:')
 		
 		gene_set,trunc_gene_set = select_gene_set(loom_filenames,
-		                      len_dict,viz=False,
+		                      len_dict,viz=True,
 		                          results_to_exclude=all_prev_results,seed=gene_sel_seed,n_gen=n_gen,
 		                          filt_param=filter_param,attr_names_in=attribute_names)
 		print('Gene set selected!')
