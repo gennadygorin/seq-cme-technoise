@@ -67,7 +67,7 @@ def inference_workflow(input_param_file):
     = param_parser(input_param_file)
 	
 	len_dict = get_transcriptome(transcriptome_filename)[transcriptome_ind]
-	datestr = (date.today().strftime("%y%m%d") if date_override is None else date_override)
+	datestr = (date.today().strftime("%y%m%d") if (not date_override) else date_override)
 	loom_filenames = [dataset_directory+k+'.loom' for k in datasets] #loom file
 	print(loom_filenames)
 
