@@ -561,7 +561,7 @@ def select_gene_set(loom_filepaths,feat_dict,viz=False,
         if int(filt_param[-1]) is not -1:
             gene_filter = np.array(gene_cluster_labels,dtype=bool)
         else:
-            gene_filter = np.ones(Ncells,dtype=bool)
+            gene_filter = np.ones(shape=gene_cluster_labels,dtype=bool)
         if viz:
             fig2, ax2 = plt.subplots(nrows=1,ncols=2,figsize=sz)
             for i in range(2):
