@@ -105,7 +105,7 @@ def inference_workflow(input_param_file):
 		print('Beginning search routine.')
 		attrn = (attribute_names[0] if len(attribute_names)==1 else attribute_names[IND])
 		# attrn = attribute_names
-		print(attrn)
+		# print(attrn)
 		search_data = get_gene_data(loom_filenames[IND],len_dict,gene_set,trunc_gene_set,viz=True,attr_names=attrn)
 		search_params = SearchParameters()
 		search_params.define_search_parameters(search_restarts,phys_lb,phys_ub,maxiter,init_pattern,use_lengths)
