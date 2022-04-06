@@ -58,7 +58,7 @@ class CMEModel:
             gf = g[0]*p[0] + g[1]*p[1]
         elif self.bio_model == 'Bursty':
             b,beta,gamma = p
-            fun = lambda x: self.burst_intfun(self,x,g,b,beta,gamma)
+            fun = lambda x: self.burst_intfun(x,g,b,beta,gamma)
             if quad_method=='quad_vec':
                 T = self.quad_vec_T*(1/beta + 1/gamma + 1)
                 gf = scipy.integrate.quad_vec(fun,0,T)[0]
