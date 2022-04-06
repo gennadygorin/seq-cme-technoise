@@ -16,6 +16,12 @@ class CMEModel:
     def __init__(self,bio_model,seq_model):
         self.bio_model = bio_model
         self.seq_model = seq_model
+
+    def set_integration_parameters(self,fixed_quad_T=10,quad_order=60,quad_vec_T=np.inf)
+        self.fixed_quad_T = fixed_quad_T
+        self.quad_order = quad_order
+        self.quad_vec_T = quad_vec_T
+
     def eval_model_pss(self,p,limits,samp=None):
         b,bet,gam = 10**p
         u = []
@@ -45,7 +51,7 @@ class CMEModel:
         return Pss
 
 
-    def eval_model_pgf(self,p,g,quad_method='fixed_quad',fixed_quad_T=10,quad_order=60,quad_vec_T=np.inf):
+    def eval_model_pgf(self,p,g,quad_method='fixed_quad'):
         p = 10**p
         if self.bio_model == 'Poisson':
             gf = g[0]*p[0] + g[1]*p[1]
@@ -53,11 +59,11 @@ class CMEModel:
             b,beta,gamma = p
             fun = lambda x: self.burst_intfun(self,x,g,b,beta,gamma)
             if quad_method=='quad_vec':
-                T = quad_vec_T*(1/beta + 1/gamma + 1)
+                T = self.quad_vec_T*(1/beta + 1/gamma + 1)
                 gf = scipy.integrate.quad_vec(fun,0,T)[0]
             if quad_method=='fixed_quad':
-                T = fixed_quad_T*(1/bet+1/gam)
-                gf = scipy.integrate.fixed_quad(fun,0,T,n=quad_order)[0]
+                T = self.fixed_quad_T*(1/beta + 1/gamma + 1)
+                gf = scipy.integrate.fixed_quad(fun,0,T,n=self.quad_order)[0]
         elif self.bio_model == 'Extrinsic':
             raise ValueError('I still need to implement this one.')
         elif self.bio_model == 'Delay':
