@@ -16,7 +16,7 @@ class CMEModel:
     def __init__(self,bio_model,seq_model):
         self.bio_model = bio_model
         self.seq_model = seq_model
-    def eval_model_pss(p,limits,samp=None):
+    def eval_model_pss(self,p,limits,samp=None):
         b,bet,gam = 10**p
         u = []
         mx = np.copy(limits)
@@ -37,7 +37,7 @@ class CMEModel:
         for i in range(len(mx)):
             g[i] = g[i].flatten()[:,np.newaxis]
 
-        gf = self.eval_model_pgf(p,g)
+        gf = self.eval_model_pgf(self,p,g)
         gf = np.exp(gf)
         gf = gf.reshape(tuple(mx))
         Pss = irfft2(gf, s=tuple(lm)) 
@@ -45,13 +45,13 @@ class CMEModel:
         return Pss
 
 
-    def eval_model_pgf(p,g,quad_method='fixed_quad',fixed_quad_T=10,quad_order=60,quad_vec_T=np.inf):
+    def eval_model_pgf(self,p,g,quad_method='fixed_quad',fixed_quad_T=10,quad_order=60,quad_vec_T=np.inf):
         p = 10**p
         if self.bio_model == 'Poisson':
             gf = g[0]*p[0] + g[1]*p[1]
         elif self.bio_model == 'Bursty':
             b,beta,gamma = p
-            fun = lambda x: self.burst_intfun(x,g,b,beta,gamma)
+            fun = lambda x: self.burst_intfun(self,x,g,b,beta,gamma)
             if quad_method=='quad_vec':
                 T = quad_vec_T*(1/beta + 1/gamma + 1)
                 gf = scipy.integrate.quad_vec(fun,0,T)[0]
@@ -66,7 +66,7 @@ class CMEModel:
             raise ValueError('Please select a biological noise model from {Poisson}, {Bursty}, {Extrinsic}, {Delay}.')
         return gf
 
-    def burst_intfun(x,g,b,beta,gamma):
+    def burst_intfun(self,x,g,b,beta,gamma):
         """
         Computes the Singh-Bokes integrand at time x.
         """
