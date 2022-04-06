@@ -66,7 +66,7 @@ class CMEModel:
             raise ValueError('Please select a biological noise model from {Poisson}, {Bursty}, {Extrinsic}, {Delay}.')
         return gf
 
-        def burst_intfun(x,g,b,beta,gamma):
+    def burst_intfun(x,g,b,beta,gamma):
         """
         Computes the Singh-Bokes integrand at time x.
         """
