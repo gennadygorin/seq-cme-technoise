@@ -63,9 +63,11 @@ class CMEModel:
             if self.quad_method=='quad_vec':
                 T = self.quad_vec_T*(1/beta + 1/gamma + 1)
                 gf = scipy.integrate.quad_vec(fun,0,T)[0]
-            if self.quad_method=='fixed_quad':
+            elif self.quad_method=='fixed_quad':
                 T = self.fixed_quad_T*(1/beta + 1/gamma + 1)
                 gf = scipy.integrate.fixed_quad(fun,0,T,n=self.quad_order)[0]
+            else:
+                raise ValueError('Please use one of the specified quadrature methods.')
         elif self.bio_model == 'Extrinsic':
             raise ValueError('I still need to implement this one.')
         elif self.bio_model == 'Delay':
