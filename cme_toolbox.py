@@ -13,15 +13,16 @@ from scipy.stats import *
 import numdifftools
 
 class CMEModel:
-    def __init__(self,bio_model,seq_model,fixed_quad_T=10,quad_order=60,quad_vec_T=np.inf):
+    def __init__(self,bio_model,seq_model,fixed_quad_T=10,quad_order=60,quad_vec_T=np.inf,quad_method='fixed_quad'):
         self.bio_model = bio_model
         self.seq_model = seq_model
-        self.set_integration_parameters(fixed_quad_T,quad_order,quad_vec_T)
+        self.set_integration_parameters(fixed_quad_T,quad_order,quad_vec_T,quad_method)
 
-    def set_integration_parameters(self,fixed_quad_T,quad_order,quad_vec_T):
+    def set_integration_parameters(self,fixed_quad_T,quad_order,quad_vec_T,quad_method):
         self.fixed_quad_T = fixed_quad_T
         self.quad_order = quad_order
         self.quad_vec_T = quad_vec_T
+        self.quad_method = quad_method
 
     def eval_model_pss(self,p,limits,samp=None):
         b,bet,gam = 10**p
@@ -52,17 +53,17 @@ class CMEModel:
         return Pss
 
 
-    def eval_model_pgf(self,p,g,quad_method='fixed_quad'):
+    def eval_model_pgf(self,p,g):
         p = 10**p
         if self.bio_model == 'Poisson':
             gf = g[0]*p[0] + g[1]*p[1]
         elif self.bio_model == 'Bursty':
             b,beta,gamma = p
             fun = lambda x: self.burst_intfun(x,g,b,beta,gamma)
-            if quad_method=='quad_vec':
+            if self.quad_method=='quad_vec':
                 T = self.quad_vec_T*(1/beta + 1/gamma + 1)
                 gf = scipy.integrate.quad_vec(fun,0,T)[0]
-            if quad_method=='fixed_quad':
+            if self.quad_method=='fixed_quad':
                 T = self.fixed_quad_T*(1/beta + 1/gamma + 1)
                 gf = scipy.integrate.fixed_quad(fun,0,T,n=self.quad_order)[0]
         elif self.bio_model == 'Extrinsic':
