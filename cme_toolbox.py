@@ -66,17 +66,17 @@ class CMEModel:
             raise ValueError('Please select a biological noise model from {Poisson}, {Bursty}, {Extrinsic}, {Delay}.')
         return gf
 
-    def burst_intfun(x,g,b,beta,gamma):
-    """
-    Computes the Singh-Bokes integrand at time x.
-    """
-    if np.isclose(beta,gamma): #compute prefactors for the ODE characteristics.
-        c_1 = g[0] #nascent
-        c_2 = x*beta*g[1]
-    else:
-        f = beta/(beta-gamma)
-        c_2 = g[1]*f
-        c_1 = g[0] - c_2
+        def burst_intfun(x,g,b,beta,gamma):
+        """
+        Computes the Singh-Bokes integrand at time x.
+        """
+        if np.isclose(beta,gamma): #compute prefactors for the ODE characteristics.
+            c_1 = g[0] #nascent
+            c_2 = x*beta*g[1]
+        else:
+            f = beta/(beta-gamma)
+            c_2 = g[1]*f
+            c_1 = g[0] - c_2
 
-    U = b * (np.exp(-beta*x)*c_1 + np.exp(-gamma*x)*c_2)
-    return U/(1-U)
+        U = b * (np.exp(-beta*x)*c_1 + np.exp(-gamma*x)*c_2)
+        return U/(1-U)
