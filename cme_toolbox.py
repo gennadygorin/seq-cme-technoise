@@ -13,11 +13,12 @@ from scipy.stats import *
 import numdifftools
 
 class CMEModel:
-    def __init__(self,bio_model,seq_model):
+    def __init__(self,bio_model,seq_model,fixed_quad_T=10,quad_order=60,quad_vec_T=np.inf):
         self.bio_model = bio_model
         self.seq_model = seq_model
+        self.set_integration_parameters(fixed_quad_T,quad_order,quad_vec_T)
 
-    def set_integration_parameters(self,fixed_quad_T=10,quad_order=60,quad_vec_T=np.inf)
+    def set_integration_parameters(self,fixed_quad_T,quad_order,quad_vec_T):
         self.fixed_quad_T = fixed_quad_T
         self.quad_order = quad_order
         self.quad_vec_T = quad_vec_T
