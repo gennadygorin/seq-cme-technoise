@@ -23,7 +23,7 @@ class CMEModel:
         mx[-1] = mx[-1]//2 + 1
         for i in range(len(mx)):
             l = np.arange(mx[i])
-            u_ = np.exp(-2j*np.pi*l/lm[i])-1
+            u_ = np.exp(-2j*np.pi*l/limits[i])-1
             if self.seq_model == 'Poisson':
                 u_ = np.exp((10**samp[i])*u_)-1
             elif self.seq_model == 'Bernoulli':
@@ -40,7 +40,7 @@ class CMEModel:
         gf = self.eval_model_pgf(self,p,g)
         gf = np.exp(gf)
         gf = gf.reshape(tuple(mx))
-        Pss = irfft2(gf, s=tuple(lm)) 
+        Pss = irfft2(gf, s=tuple(limits)) 
         Pss = np.abs(Pss)/np.sum(np.abs(Pss))
         return Pss
 
