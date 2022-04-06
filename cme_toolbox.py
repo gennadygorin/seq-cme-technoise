@@ -31,8 +31,7 @@ class CMEModel:
             elif self.seq_model == 'None':
                 pass
             else:
-                except ValueError:
-                    print('Please select a technical noise model from {Poisson}, {Bernoulli}, {None}.')
+                raise ValueError('Please select a technical noise model from {Poisson}, {Bernoulli}, {None}.')
             u.append(u_)
         g = np.meshgrid(*[u_ for u_ in u], indexing='ij')
         for i in range(len(mx)):
@@ -60,14 +59,11 @@ class CMEModel:
                 T = fixed_quad_T*(1/bet+1/gam)
                 gf = scipy.integrate.fixed_quad(fun,0,T,n=quad_order)[0]
         elif self.bio_model == 'Extrinsic':
-            except ValueError:
-                print('I still need to implement this one.')
+            raise ValueError('I still need to implement this one.')
         elif self.bio_model == 'Delay':
-            except ValueError:
-                print('I still need to implement this one.')
+            raise ValueError('I still need to implement this one.')
         else:
-            except ValueError:
-                print('Please select a biological noise model from {Poisson}, {Bursty}, {Extrinsic}, {Delay}.')
+            raise ValueError('Please select a biological noise model from {Poisson}, {Bursty}, {Extrinsic}, {Delay}.')
         return gf
 
     def burst_intfun(x,g,b,beta,gamma):
