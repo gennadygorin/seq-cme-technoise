@@ -37,7 +37,7 @@ class CMEModel:
         for i in range(len(mx)):
             g[i] = g[i].flatten()[:,np.newaxis]
 
-        gf = self.eval_model_pgf(self,p,g)
+        gf = self.eval_model_pgf(p,g)
         gf = np.exp(gf)
         gf = gf.reshape(tuple(mx))
         Pss = irfft2(gf, s=tuple(limits)) 
