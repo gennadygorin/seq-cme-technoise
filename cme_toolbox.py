@@ -25,7 +25,6 @@ class CMEModel:
         self.quad_method = quad_method
 
     def eval_model_pss(self,p,limits,samp=None):
-        b,bet,gam = 10**p
         u = []
         mx = np.copy(limits)
         mx[-1] = mx[-1]//2 + 1
@@ -34,7 +33,7 @@ class CMEModel:
             u_ = np.exp(-2j*np.pi*l/limits[i])-1
             if self.seq_model == 'Poisson':
                 u_ = np.exp((10**samp[i])*u_)-1
-            elif self.seq_model == 'Bernoulli':
+            elif self.seq_model == 'Bernoulli': #it might be better to have this one in terms of a positive optimizable value
                 u_ *= samp[i]
             elif self.seq_model == 'None':
                 pass
@@ -54,7 +53,7 @@ class CMEModel:
 
 
     def eval_model_pgf(self,p,g):
-        p = 10**p #these are going to have different interpretations for different models.
+        p = 10**p #these are going to have different interpretations for different models. Should we harmonize them?
         if self.bio_model == 'Poisson':
             gf = g[0]*p[0] + g[1]*p[1]
         elif self.bio_model == 'Bursty':
