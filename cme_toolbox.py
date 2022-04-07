@@ -54,9 +54,9 @@ class CMEModel:
 
     def eval_model_pgf(self,p,g):
         p = 10**p #these are going to have different interpretations for different models. Should we harmonize them?
-        if self.bio_model == 'Poisson':
+        if self.bio_model == 'Poisson': #constitutive production
             gf = g[0]*p[0] + g[1]*p[1]
-        elif self.bio_model == 'Bursty':
+        elif self.bio_model == 'Bursty': #bursty production
             b,beta,gamma = p
             fun = lambda x: self.burst_intfun(x,g,b,beta,gamma)
             if self.quad_method=='quad_vec':
@@ -67,9 +67,9 @@ class CMEModel:
                 gf = scipy.integrate.fixed_quad(fun,0,T,n=self.quad_order)[0]
             else:
                 raise ValueError('Please use one of the specified quadrature methods.')
-        elif self.bio_model == 'Extrinsic':
+        elif self.bio_model == 'Extrinsic': #constitutive production with extrinsic noise
             raise ValueError('I still need to implement this one.')
-        elif self.bio_model == 'Delay':
+        elif self.bio_model == 'Delay': #bursty production with delayed degradation
             b,beta,tauinv = p
             tau = 1/tauinv
             U  = g[1] + (g[0]-g[1])*np.exp(-beta*tau)
