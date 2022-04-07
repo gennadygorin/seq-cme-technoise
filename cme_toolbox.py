@@ -54,7 +54,7 @@ class CMEModel:
 
 
     def eval_model_pgf(self,p,g):
-        p = 10**p
+        p = 10**p #these are going to have different interpretations for different models.
         if self.bio_model == 'Poisson':
             gf = g[0]*p[0] + g[1]*p[1]
         elif self.bio_model == 'Bursty':
@@ -71,10 +71,15 @@ class CMEModel:
         elif self.bio_model == 'Extrinsic':
             raise ValueError('I still need to implement this one.')
         elif self.bio_model == 'Delay':
-            raise ValueError('I still need to implement this one.')
+            b,beta,tauinv = p
+            tau = 1/tauinv
+            U  = g[1] + (g[0]-g[1])*np.exp(-beta*tau)
+            gf = -1/beta * np.log(1-b*U) + k/beta/(1-b*g[1]) * np.log((b*U-1)/(b*g[0]-1)) + tau * b*g[1]/(1-b*g[1])
+
+            # raise ValueError('I still need to implement this one.')
         else:
             raise ValueError('Please select a biological noise model from {Poisson}, {Bursty}, {Extrinsic}, {Delay}.')
-        return gf
+        return gf #this is the log-generating function
 
     def burst_intfun(self,x,g,b,beta,gamma):
         """
