@@ -74,7 +74,7 @@ class CMEModel:
             b,beta,tauinv = p
             tau = 1/tauinv
             U  = g[1] + (g[0]-g[1])*np.exp(-beta*tau)
-            gf = -1/beta * np.log(1-b*U) + k/beta/(1-b*g[1]) * np.log((b*U-1)/(b*g[0]-1)) + tau * b*g[1]/(1-b*g[1])
+            gf = -1/beta * np.log(1-b*U) + 1/beta/(1-b*g[1]) * np.log((b*U-1)/(b*g[0]-1)) + tau * b*g[1]/(1-b*g[1])
         else:
             raise ValueError('Please select a biological noise model from {Poisson}, {Bursty}, {Extrinsic}, {Delay}.')
         return gf #this is the log-generating function
