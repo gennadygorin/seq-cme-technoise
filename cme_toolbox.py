@@ -92,3 +92,26 @@ class CMEModel:
 
         U = b * (np.exp(-beta*x)*c_1 + np.exp(-gamma*x)*c_2)
         return U/(1-U)
+
+#rewrite this whole thing so it can use any of the models.
+    # def get_MoM(moment_data,lb_log,ub_log,samp=None):
+        """
+        Initialize parameter search at the method of moments estimates.
+        lower bound and upper bound are harmonized with optimization routine and input as log10.
+        """
+
+        # lb = 10**lb_log
+        # ub = 10**ub_log
+        
+        # var_U, mean_U, mean_S = moment_data
+        # b = var_U / mean_U - 1
+        # if samp is not None:
+        #     samp = 10**samp
+        #     b = b / samp[0] - 1
+        # else:
+        #     samp = [1,1]
+        # b = np.clip(b,lb[0],ub[0])
+        # bet = np.clip(b * samp[0] / mean_U, lb[1], ub[1])
+        # gam = np.clip(b * samp[1] / mean_S, lb[2], ub[2])
+        # x0 = np.log10(np.asarray([b,bet,gam]))
+        # return x0
