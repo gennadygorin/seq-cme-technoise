@@ -13,21 +13,51 @@ from datetime import datetime
 code_ver_global='020'
 
 ########################
+## Debug and error logging
+########################
+import logging, sys
+
+logging.basicConfig(stream=sys.stdout)
+log = logging.getLogger()
+log.setLevel(logging.DEBUG)
+
+########################
 ## Initialization
 ########################
 
-def create_dir(batch_location = '.',meta='batch',batch_id=1,\
+
+def create_dir(batch_id=1,batch_location = '.',meta='batch',\
                datestring=datetime.now().strftime("%y%m%d"),\
-               creator='gg',code_ver=code_ver_global):
+               creator='gg',code_ver=code_ver_global,\
+               write_gitignore=True):
+    """
+    This function creates a directory that will hold a particular numerical experiment,
+    and writes a .gitignore file inside it. 
+
+    Input:
+    batch_location: the parent directory (no trailing /).
+    meta: any string metadata.
+    batch_id: experiment number.
+    datestring: current date, in ISO format.
+    creator: creator initials.
+    code_ver: version of the code used to perform the experiment.
+    write_gitignore: whether to write a gitignore file.
+
+    Output:
+    dir_string: the experiment directory.
+    """
     dir_string = '_'.join((creator, datestring, code_ver, meta, str(batch_id)))
     dir_string = batch_location + '/' + dir_string 
     try: 
         os.mkdir(dir_string) 
-        with open(dir_string+'/.gitignore', 'w') as gitignore: 
-            pass
-        print('Directory ' + dir_string+ ' created; gitignore written.')
+        log.info('Directory ' + dir_string+ ' created.')
+        if write_gitignore:
+            with open(dir_string+'/.gitignore', 'w') as gitignore: 
+                pass
+            log.info('gitignore written.')
     except OSError as error: 
-        print('Directory ' + dir_string+ ' exists.')
+        log.warning('Directory ' + dir_string+ ' already exists.')
+    return dir_string
 
 def get_transcriptome(transcriptome_filepath,repeat_thr=15):
     """
