@@ -25,11 +25,15 @@ log.setLevel(logging.DEBUG)
 ## Initialization
 ########################
 
+def construct_batch(loom_filepaths, batch_id=1, meta='batch',\
+                    datestring=datetime.now().strftime("%y%m%d"),\
+                    creator='gg', code_ver=code_ver_global,\
+                    write_gitignore=True, batch_location='.',)
 
-def create_dir(batch_id=1,batch_location = '.',meta='batch',\
+def create_experiment_dir(batch_id=1, meta='batch',\
                datestring=datetime.now().strftime("%y%m%d"),\
-               creator='gg',code_ver=code_ver_global,\
-               write_gitignore=True):
+               creator='gg', code_ver=code_ver_global,\
+               write_gitignore=True, batch_location = '.'):
     """
     This function creates a directory that will hold a particular numerical experiment,
     and writes a .gitignore file inside it. 
@@ -58,6 +62,7 @@ def create_dir(batch_id=1,batch_location = '.',meta='batch',\
     except OSError as error: 
         log.warning('Directory ' + dir_string+ ' already exists.')
     return dir_string
+
 
 def get_transcriptome(transcriptome_filepath,repeat_thr=15):
     """
