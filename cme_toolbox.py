@@ -1,19 +1,21 @@
 
 import numpy as np
-import numpy.matlib
+# import numpy.matlib
 
 import scipy
 
-import random
 from scipy.fft import irfft2
 
+# import random
+# from scipy.fft import irfft2
 
-import scipy.stats.mstats
-from scipy.stats import *
-import numdifftools
+
+# import scipy.stats.mstats
+# from scipy.stats import *
+# import numdifftools
 
 class CMEModel:
-    def __init__(self,bio_model,seq_model,fixed_quad_T=10,quad_order=60,quad_vec_T=np.inf,quad_method='fixed_quad'):
+    def __init__(self,bio_model,seq_model,quad_method='fixed_quad',fixed_quad_T=10,quad_order=60,quad_vec_T=np.inf):
         self.bio_model = bio_model
         self.seq_model = seq_model
         self.set_integration_parameters(fixed_quad_T,quad_order,quad_vec_T,quad_method)
@@ -94,24 +96,44 @@ class CMEModel:
         return U/(1-U)
 
 #rewrite this whole thing so it can use any of the models.
-    # def get_MoM(moment_data,lb_log,ub_log,samp=None):
+    def get_MoM(self,moments,lb_log,ub_log,samp=None):
         """
         Initialize parameter search at the method of moments estimates.
         lower bound and upper bound are harmonized with optimization routine and input as log10.
         """
 
-        # lb = 10**lb_log
-        # ub = 10**ub_log
+        lb = 10**lb_log
+        ub = 10**ub_log
         
-        # var_U, mean_U, mean_S = moment_data
-        # b = var_U / mean_U - 1
-        # if samp is not None:
-        #     samp = 10**samp
-        #     b = b / samp[0] - 1
-        # else:
-        #     samp = [1,1]
-        # b = np.clip(b,lb[0],ub[0])
-        # bet = np.clip(b * samp[0] / mean_U, lb[1], ub[1])
-        # gam = np.clip(b * samp[1] / mean_S, lb[2], ub[2])
-        # x0 = np.log10(np.asarray([b,bet,gam]))
-        # return x0
+        if self.bio_model == 'Bursty':
+            b = moments['U_var'] / moments['U_mean'] - 1
+            if self.seq_model == 'Poisson':
+                samp = 10**samp
+                b = b / samp[0] - 1
+            elif self.seq_model == 'None':
+                samp = [1,1]
+            elif self.seq_model == 'Bernoulli':
+                raise ValueError('I still need to implement this one.')
+
+            b = np.clip(b,lb[0],ub[0])
+            beta = np.clip(b * samp[0] / moments['U_mean'], lb[1], ub[1])
+            gamma = np.clip(b * samp[1] / moments['S_mean'], lb[2], ub[2])
+            x0 = np.log10(np.asarray([b,beta,gamma]))
+        elif self.bio_model == 'Delay':
+            b = moments['U_var'] / moments['U_mean'] - 1
+            if self.seq_model == 'Poisson':
+                samp = 10**samp
+                b = b / samp[0] - 1
+                raise ValueError('I am actually not sure about this one yet.')
+            elif self.seq_model == 'None':
+                samp = [1,1]
+            elif self.seq_model == 'Bernoulli':
+                raise ValueError('I still need to implement this one.')
+
+            b = np.clip(b,lb[0],ub[0])
+            beta = np.clip(b * samp[0] / moments['U_mean'], lb[1], ub[1])
+            tauinv = np.clip(b * samp[1] / moments['S_mean'], lb[2], ub[2])
+            x0 = np.log10(np.asarray([b,beta,gamma]))
+        else:
+            raise ValueError('I still need to implement the other models.')
+        return x0

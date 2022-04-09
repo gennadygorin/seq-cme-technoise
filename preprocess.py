@@ -54,7 +54,7 @@ def construct_batch(loom_filepaths, transcriptome_filepath, dataset_names, batch
     seed:
     filt_param:    
     batch_location: the parent directory (no trailing /).
-    meta: any string metadata.
+    meta: any string metadata. I recommend putting number of genes here.
     batch_id: experiment number.
     datestring: current date, in ISO format.
     creator: creator initials.

@@ -110,6 +110,7 @@ def extract_data(loom_filepath, transcriptome_filepath, dataset_name,
                              M,N,hist,moments,gene_log_lengths,n_genes,gene_names,n_cells,S,U)
     search_data_string = dataset_string+'/raw.sd'
     store_search_data(search_data,search_data_string)
+    return search_data
 
 ########################
 ## Helper functions
