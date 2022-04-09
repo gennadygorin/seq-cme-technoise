@@ -60,7 +60,7 @@ def construct_batch(loom_filepaths, transcriptome_filepath, dataset_names, batch
     creator: creator initials.
     code_ver: version of the code used to perform the experiment.
     """
-
+    log.info('Beginning data preprocessing and filtering.')
     dir_string = batch_location + '/' + ('_'.join((creator, datestring, code_ver, meta, str(batch_id))))
     make_dir(dir_string)
     dataset_strings = []
@@ -96,13 +96,13 @@ def construct_batch(loom_filepaths, transcriptome_filepath, dataset_names, batch
         gene_exp_filter = threshold_by_expression(S,U,filt_param)
         if viz:
             var_name = ('S','U')
-            var_arr = ('S.mean(1)','U.mean(1)')
+            var_arr = (S.mean(1),U.mean(1))
 
             fig1, ax1 = plt.subplots(nrows=1,ncols=2,figsize=(12,4))
             for i in range(2):
-                ax1[i].scatter(np.log10(len_arr)[~gene_exp_filter], np.log10(eval(var_arr[i])[~gene_exp_filter] + 0.001),s=3,
+                ax1[i].scatter(np.log10(len_arr)[~gene_exp_filter], np.log10(var_arr[i][~gene_exp_filter] + 0.001),s=3,
                             c='silver',alpha=0.15)
-                ax1[i].scatter(np.log10(len_arr[gene_exp_filter]), np.log10(eval(var_arr[i])[gene_exp_filter] + 0.001),s=3,
+                ax1[i].scatter(np.log10(len_arr[gene_exp_filter]), np.log10(var_arr[i][gene_exp_filter] + 0.001),s=3,
                             c='indigo',alpha=0.3)
                 ax1[i].set_xlabel('log10 gene length')
                 ax1[i].set_ylabel('log10 (mean '+var_name[i]+' + 0.001)')
@@ -147,12 +147,18 @@ def construct_batch(loom_filepaths, transcriptome_filepath, dataset_names, batch
 ## Helper functions
 ########################
 
-def filter_by_gene(filter,S,U,gene_names):
-    #take in a Boolean filter over genes, select the entries of S, U, and gene_names that match the filter.
-    S = S[filter,:]
-    U = U[filter,:]
-    gene_names = gene_names[filter]
-    return S,U,gene_names
+# def filter_by_gene(filter,S,U,gene_names):
+#     #take in a Boolean or integer filter over genes, select the entries of inputs that match the filter.
+#     S = S[filter,:]
+#     U = U[filter,:]
+#     gene_names = gene_names[filter]
+#     return S,U,gene_names
+def filter_by_gene(filter,*args):
+    #take in a Boolean or integer filter over genes, select the entries of inputs that match the filter.
+    out = []
+    for arg in args:
+        out += [arg[filter].squeeze()]
+    return tuple(out)
 
 def threshold_by_expression(S,U,
     filt_param={'min_U_mean':0.01,\
