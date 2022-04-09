@@ -35,7 +35,7 @@ class CMEModel:
                 u_ = np.exp((10**samp[i])*u_)-1
             elif self.seq_model == 'Bernoulli': #it might be better to have this one in terms of a positive optimizable value
                 u_ *= samp[i]
-            elif self.seq_model == 'None':
+            elif self.seq_model == 'None' or self.seq_model is None:
                 pass
             else:
                 raise ValueError('Please select a technical noise model from {Poisson}, {Bernoulli}, {None}.')

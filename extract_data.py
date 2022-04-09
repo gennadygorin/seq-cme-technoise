@@ -90,7 +90,7 @@ def extract_data(loom_filepath, transcriptome_filepath, dataset_name,
     gene_log_lengths = np.log10(len_arr)
 
     hist = []
-    moments = {'S_mean':[], 'U_mean':[], 'S_var':[], 'U_var':[]}
+    moments = [] 
     raw_U = []
     raw_S = []
     for gene_index in range(n_genes):
@@ -100,10 +100,10 @@ def extract_data(loom_filepath, transcriptome_filepath, dataset_name,
                                           density=True)
         hist.append(H)
 
-        moments['S_mean'].append(S[gene_index].mean())
-        moments['U_mean'].append(U[gene_index].mean())
-        moments['S_var'].append(S[gene_index].var())
-        moments['U_var'].append(S[gene_index].var())
+        moments.append({'S_mean':S[gene_index].mean(), \
+                        'U_mean':U[gene_index].mean(), \
+                        'S_var':S[gene_index].var(), \
+                        'U_var':U[gene_index].var()})
     
     attr_names = ('M','N','hist','moments','gene_log_lengths','n_genes','gene_names','n_cells','S','U')
     search_data = SearchData(attr_names,\
