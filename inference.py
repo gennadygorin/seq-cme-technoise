@@ -5,6 +5,9 @@ from scipy import optimize
 from preprocess import *
 from cme_toolbox import *
 import multiprocessing
+#lbfgsb has a deprecation warning for .tostring(), probably in FORTRAN interface
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning) 
 
 
 class InferenceParameters:
@@ -220,8 +223,8 @@ class SearchResults:
             self.append_grid_point(point_index)
         self.clean_up()
 
-    def append_grid_point(self, grid_point_index):
-        grid_point_result_string = self.inference_string + '/grid_point_'+str(grid_point_index)+'.gp'
+    def append_grid_point(self, point_index):
+        grid_point_result_string = self.inference_string + '/grid_point_'+str(point_index)+'.gp'
         with open(grid_point_result_string,'rb') as ipfs:
             grid_point_results = pickle.load(ipfs)
             self.param_estimates += [grid_point_results.param_estimates]
@@ -231,7 +234,7 @@ class SearchResults:
 
     def clean_up(self):
         for point_index in range(self.n_grid_points):
-            os.remove(self.inference_string + '/grid_point_'+str(grid_point_index)+'.gp')
+            os.remove(self.inference_string + '/grid_point_'+str(point_index)+'.gp')
         self.param_estimates = np.array(param_estimates)
         self.klds = np.array(klds)
         self.obj_func = np.array(obj_func)
