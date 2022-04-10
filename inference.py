@@ -230,7 +230,8 @@ class SearchResults:
             self.d_time += [grid_point_results.d_time]
 
     def clean_up(self):
-        os.remove(self.inference_string+'/*.gp')
+        for point_index in range(self.n_grid_points):
+            os.remove(self.inference_string + '/grid_point_'+str(grid_point_index)+'.gp')
         self.param_estimates = np.array(param_estimates)
         self.klds = np.array(klds)
         self.obj_func = np.array(obj_func)
