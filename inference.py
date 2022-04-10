@@ -222,7 +222,7 @@ class SearchResults:
 
     def append_grid_point(self, grid_point_index):
         grid_point_result_string = self.inference_string + '/grid_point_'+str(grid_point_index)+'.gp'
-        with open(grid_point_result_string,'r') as ipfs:
+        with open(grid_point_result_string,'rb') as ipfs:
             grid_point_results = pickle.load(ipfs)
             self.param_estimates += grid_point_results.param_estimates
             self.klds += grid_point_results.klds
