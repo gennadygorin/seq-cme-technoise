@@ -78,9 +78,9 @@ class InferenceParameters:
             full_result_string = self.inference_string + '/grid_scan_results.res'
             with open(full_result_string,'wb') as srfs:
                 pickle.dump(results, srfs)
-            log.debug('Grid scan results stored to {}.'.format(self.point_index,full_result_string))
+            log.debug('Grid scan results stored to {}.'.format(full_result_string))
         except:
-            log.error('Grid scan results could not be stored to {}.'.format(self.point_index,full_result_string))
+            log.error('Grid scan results could not be stored to {}.'.format(full_result_string))
 
 
     def par_fun(self,inputs):
