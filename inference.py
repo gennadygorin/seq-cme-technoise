@@ -224,10 +224,10 @@ class SearchResults:
         grid_point_result_string = self.inference_string + '/grid_point_'+str(grid_point_index)+'.gp'
         with open(grid_point_result_string,'rb') as ipfs:
             grid_point_results = pickle.load(ipfs)
-            self.param_estimates += grid_point_results.param_estimates
-            self.klds += grid_point_results.klds
-            self.obj_func += grid_point_results.obj_func
-            self.d_time += grid_point_results.d_time
+            self.param_estimates += [grid_point_results.param_estimates]
+            self.klds += [grid_point_results.klds]
+            self.obj_func += [grid_point_results.obj_func]
+            self.d_time += [grid_point_results.d_time]
 
     def clean_up(self):
         os.remove(self.inference_string+'/*.gp')
