@@ -7,7 +7,7 @@ import time
 import loompy as lp
 import os
 from datetime import datetime
-	
+import pytz
 import collections
 import csv
 import warnings
@@ -40,7 +40,7 @@ def construct_batch(loom_filepaths, transcriptome_filepath, dataset_names, batch
                                 'max_S_max':400,'min_U_max':3,'min_S_max':3},\
                     attribute_names=['spliced','unspliced','gene_name','barcode'],\
                     meta='batch',\
-                    datestring=datetime.now().strftime("%y%m%d"),\
+                    datestring=datetime.now(pytz.timezone('US/Pacific')).strftime("%y%m%d"),\
                     creator='gg', code_ver=code_ver_global,\
                     batch_location='.'):
     """
@@ -56,7 +56,7 @@ def construct_batch(loom_filepaths, transcriptome_filepath, dataset_names, batch
     batch_location: the parent directory (no trailing /).
     meta: any string metadata. I recommend putting number of genes here.
     batch_id: experiment number.
-    datestring: current date, in ISO format.
+    datestring: current date, in ISO format. Califonia time by default.
     creator: creator initials.
     code_ver: version of the code used to perform the experiment.
     """

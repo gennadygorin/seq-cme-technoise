@@ -26,6 +26,19 @@ class CMEModel:
         self.quad_vec_T = quad_vec_T
         self.quad_method = quad_method
 
+    def get_log_name_str(self):
+        if self.bio_model == 'Poisson':
+            raise ValueError('I still need to implement this one.')
+        elif self.bio_model == 'Delay':
+            return (r'$\log_{10} b$',r'$\log_{10} \beta$',r'$\log_{10} \tau^{-1}$')
+        elif self.bio_model == 'Bursty':
+            return (r'$\log_{10} b$',r'$\log_{10} \beta$',r'$\log_{10} \gamma$')
+        elif self.bio_model == 'Extrinsic': #constitutive production with extrinsic noise
+            raise ValueError('I still need to implement this one.')
+        else:
+            raise ValueError('Please select a biological noise model from {Poisson}, {Bursty}, {Extrinsic}, {Delay}.')
+
+
     def eval_model_pss(self,p,limits,samp=None):
         u = []
         mx = np.copy(limits)
@@ -51,7 +64,7 @@ class CMEModel:
         gf = gf.reshape(tuple(mx))
         Pss = irfft2(gf, s=tuple(limits)) 
         Pss = np.abs(Pss)/np.sum(np.abs(Pss))
-        return Pss
+        return Pss.squeeze()
 
 
     def eval_model_pgf(self,p,g):
