@@ -572,7 +572,9 @@ class SearchResults:
             log.info('Figure stored to {}.'.format(fig_string))
             
         if overwrite:
+            self.chisquare_testing(search_data)
             log.info('Optimum retained at {:.2f}, {:.2f}.'.format(self.samp_optimum[0],self.samp_optimum[1]))
         else:
             self.find_sampling_optimum()
+            self.chisquare_testing(search_data)
             log.info('Optimum restored to {:.2f}, {:.2f}.'.format(self.samp_optimum[0],self.samp_optimum[1]))
