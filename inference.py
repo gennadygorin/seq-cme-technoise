@@ -416,7 +416,7 @@ class SearchResults:
             lm = [search_data.M[gene_index],search_data.N[gene_index]]  
             expected_freq = self.model.eval_model_pss(self.phys_optimum[gene_index],lm,samp).flatten()
             # temp = expected_freq[i_]
-            expected_freq[expected_freq<EPS]=EPS
+            # expected_freq[expected_freq<EPS]=EPS #no need
             csqarr += [scipy.stats.mstats.chisquare(search_data.hist[gene_index].flatten(),expected_freq)]
             # expected_freq[i_] = temp
         # csqarr = [scipy.stats.mstats.chisquare(result_data.hist[i_].flatten(), 
