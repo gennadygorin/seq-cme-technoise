@@ -137,7 +137,7 @@ class CMEModel:
             if self.seq_model == 'Poisson':
                 samp = 10**samp
                 b = b / samp[0] - 1
-                raise ValueError('I am actually not sure about this one yet.')
+                log.warning('I am not totally sure about this one.')
             elif self.seq_model == 'None':
                 samp = [1,1]
             elif self.seq_model == 'Bernoulli':
