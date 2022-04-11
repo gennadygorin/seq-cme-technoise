@@ -137,7 +137,7 @@ class CMEModel:
             if self.seq_model == 'Poisson':
                 samp = 10**samp
                 b = b / samp[0] - 1
-                log.warning('I am not totally sure about this one.')
+                # log.warning('I am not totally sure about this one.')
             elif self.seq_model == 'None':
                 samp = [1,1]
             elif self.seq_model == 'Bernoulli':
@@ -146,7 +146,7 @@ class CMEModel:
             b = np.clip(b,lb[0],ub[0])
             beta = np.clip(b * samp[0] / moments['U_mean'], lb[1], ub[1])
             tauinv = np.clip(b * samp[1] / moments['S_mean'], lb[2], ub[2])
-            x0 = np.log10(np.asarray([b,beta,gamma]))
+            x0 = np.log10(np.asarray([b,beta,tauinv]))
         else:
             raise ValueError('I still need to implement the other models.')
         return x0
