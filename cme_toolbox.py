@@ -1,10 +1,10 @@
-
 import numpy as np
 # import numpy.matlib
 
 import scipy
 
 from scipy.fft import irfft2
+from preprocess import *
 
 # import random
 # from scipy.fft import irfft2
