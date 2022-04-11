@@ -41,8 +41,8 @@ def plot_param_L_dep(search_results,search_data,gene_filter = None,\
                 log.warning('Sampling parameter value is inconsistent.')
                 distinguish_rej = False
             else: #if everything is ready
-                gene_filter = np.logical_and(gene_filter,~search_results.rejected_genes)
                 gene_filter_rej =  np.logical_and(gene_filter,search_results.rejected_genes)
+                gene_filter = np.logical_and(gene_filter,~search_results.rejected_genes) #note this updates gene_filter!
                 acc_point_aesth = ('accepted_gene_color','accepted_gene_alpha','accepted_gene_ms')
                 rej_point_aesth = ('rejected_gene_color','rejected_gene_alpha','rejected_gene_ms')
         else:
@@ -206,8 +206,8 @@ def plot_params_for_pair(sr1,sd1,sr2,analysis_dir_string,gene_filter = None,\
                 log.warning('Sampling parameter value is inconsistent.')
                 distinguish_rej = False
             else: #if everything is ready
-                gene_filter = np.logical_and(gene_filter,~sr1.rejected_genes,~sr2.rejected_genes)
                 gene_filter_rej =  np.logical_and(gene_filter,np.logical_or(sr1.rejected_genes,sr2.rejected_genes))
+                gene_filter = np.logical_and(gene_filter,~sr1.rejected_genes,~sr2.rejected_genes)
                 acc_point_aesth = ('accepted_gene_color','accepted_gene_alpha','accepted_gene_ms')
                 rej_point_aesth = ('rejected_gene_color','rejected_gene_alpha','rejected_gene_ms')
         else:
