@@ -27,7 +27,7 @@ def plot_param_L_dep(search_results,search_data,gene_filter = None,\
 
     if gene_filter is None:
         gene_filter = np.ones(search_results.phys_optimum.shape[0],dtype=bool)
-        gene_filter_rej = ~gene_filter
+        gene_filter_rej = np.zeros(search_results.phys_optimum.shape[0],dtype=bool)
     else:
         if gene_filter.dtype != np.bool:
             gf_temp = np.zeros(search_results.phys_optimum.shape[0],dtype=bool)
@@ -53,8 +53,6 @@ def plot_param_L_dep(search_results,search_data,gene_filter = None,\
         acc_point_aesth = ('generic_gene_color','generic_gene_alpha','generic_gene_ms')
         # gene_filter = np.ones(search_results.phys_optimum.shape[0],dtype=bool)
         log.info('Falling back on generic marker properties.') 
-        print()   
-
 
     for i in range(3):
         if plot_errorbars:
@@ -90,7 +88,6 @@ def plot_param_L_dep(search_results,search_data,gene_filter = None,\
                        alpha=aesthetics[acc_point_aesth[1]],\
                        s=aesthetics[acc_point_aesth[2]])
         if np.any(gene_filter_rej):
-            #this isn't strictly correct: it will plot filtered-out genes too...
             ax1[i].scatter(search_data.gene_log_lengths[gene_filter_rej],
                 search_results.phys_optimum[gene_filter_rej,i],\
                c=aesthetics[rej_point_aesth[0]],\
