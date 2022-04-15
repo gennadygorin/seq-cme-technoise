@@ -105,7 +105,7 @@ class InferenceParameters:
         # full_result_string = self.store_search_results()
         results = SearchResults(self,search_data)
         results.aggregate_grid_points()
-        results.store_on_disk()
+        full_result_string = results.store_on_disk()
 
         t2 = time.time()
         log.info('Runtime: {:.1f} seconds.'.format(t2-t1))
