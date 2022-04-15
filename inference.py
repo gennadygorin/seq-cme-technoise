@@ -321,7 +321,7 @@ class SearchResults:
 
     def set_sampling_optimum(self,samp_optimum_ind):
         self.samp_optimum_ind = samp_optimum_ind
-        self.samp_optimum = self.sr.sampl_vals[samp_optimum_ind]
+        self.samp_optimum = self.sp.sampl_vals[samp_optimum_ind]
         self.phys_optimum = self.param_estimates[samp_optimum_ind]
         self.regressor_optimum = self.regressor[samp_optimum_ind]
         return self.samp_optimum
