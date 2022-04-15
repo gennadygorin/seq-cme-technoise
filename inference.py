@@ -98,7 +98,7 @@ class InferenceParameters:
             log.info('Parallelized grid scan complete.')
         else:
             log.info('Starting non-parallelized grid scan.')
-            for point_index in range(self.sp.n_grid_points):
+            for point_index in range(self.n_grid_points):
                 grad_inference = GradientInference(self,self.model,search_data,point_index)
                 grad_inference.fit_all_genes(model,search_data)
             log.info('Non-parallelized grid scan complete.')
@@ -152,8 +152,8 @@ class GradientInference:
             
     def optimize_gene(self,gene_index,model,search_data):
         # n_phys_pars = len(self.phys_lb)
-        x0 = np.random.rand(self.gradient_params['num_restarts'],self.n_phys_pars)*\
-                (self.phys_ub-self.phys_lb)+self.phys_lb
+
+        x0 = np.random.rand(self.gradient_params['num_restarts'],self.n_phys_pars)*(self.phys_ub-self.phys_lb)+self.phys_lb
         if self.gradient_params['init_pattern'] == 'moments': #this can be extended to other initialization patterns, like latin squares
             x0[0] = self.param_MoM[gene_index]
         x = x0[0]
