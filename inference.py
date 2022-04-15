@@ -92,7 +92,7 @@ class InferenceParameters:
             #add a progress bar here.
             pool=multiprocessing.Pool(processes=num_cores)
             #This might be improved.
-            pool.map(self.par_fun,zip(range(self.sp.n_grid_points),[[search_data,self.model]]*self.sp.n_grid_points))
+            pool.map(self.par_fun,zip(range(self.n_grid_points),[[search_data,self.model]]*self.n_grid_points))
             pool.close()
             pool.join()
             log.info('Parallelized grid scan complete.')
