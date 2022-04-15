@@ -100,7 +100,7 @@ class InferenceParameters:
             log.info('Starting non-parallelized grid scan.')
             for point_index in range(self.n_grid_points):
                 grad_inference = GradientInference(self,self.model,search_data,point_index)
-                grad_inference.fit_all_genes(model,search_data)
+                grad_inference.fit_all_genes(self.model,search_data)
             log.info('Non-parallelized grid scan complete.')
         # full_result_string = self.store_search_results()
         results = SearchResults(self,search_data)
