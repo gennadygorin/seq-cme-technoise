@@ -151,8 +151,8 @@ class GradientInference:
                                     regressor[i]) for i in range(search_data.n_genes)])
             
     def optimize_gene(self,gene_index,model,search_data):
-        # n_phys_pars = len(self.phys_lb)
-
+        print(self.n_phys_pars)
+        print(self.gradient_params['num_restarts'])
         x0 = np.random.rand(self.gradient_params['num_restarts'],self.n_phys_pars)*(self.phys_ub-self.phys_lb)+self.phys_lb
         if self.gradient_params['init_pattern'] == 'moments': #this can be extended to other initialization patterns, like latin squares
             x0[0] = self.param_MoM[gene_index]
