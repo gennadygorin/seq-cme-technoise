@@ -123,8 +123,6 @@ def store_search_data(search_data,search_data_string):
     except:
         log.error('Search data could not be stored to {}.'.format(search_data_string))
 
-
-
 ########################
 ## Helper classes
 ########################

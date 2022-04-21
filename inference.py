@@ -482,6 +482,7 @@ class SearchResults:
         return (csq,pval)
 
     def compute_sigma(self,search_data):
+        #this is a bit slow, and should probably be parallelized.
         log.info('Computing local Hessian.')
         t1 = time.time()
 
