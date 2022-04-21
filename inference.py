@@ -49,7 +49,7 @@ class InferenceParameters:
         self.use_lengths = use_lengths
 
         if model.seq_model == 'None':
-            log.log('Sequencing model set to None. All sampling parameters set to null.')
+            log.info('Sequencing model set to None. All sampling parameters set to null.')
             samp_lb = []
             samp_ub = []
             gridsize = [1,1]
