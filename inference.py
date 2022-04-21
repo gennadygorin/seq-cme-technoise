@@ -48,9 +48,17 @@ class InferenceParameters:
 
         self.use_lengths = use_lengths
 
-        self.samp_lb = np.array(samp_lb)
-        self.samp_ub = np.array(samp_ub)
+        if model.seq_model == 'None':
+            log.log('Sequencing model set to None. All sampling parameters set to null.')
+            samp_lb = []
+            samp_ub = []
+            gridsize = [1,1]
+
+        self.samp_lb = np.array([1,1])
+        self.samp_ub = np.array([1,1])
         self.gridsize = gridsize
+
+
         self.construct_grid()
         self.model = model
 
