@@ -18,6 +18,15 @@ def load_search_results(full_result_string):
     except:
         log.error('Grid scan results could not be loaded from {}.'.format(full_result_string))
 
+def load_search_data(search_data_string):
+    try:
+        with open(search_data_string,'rb') as sdfs:
+            sd = pickle.load(sdfs)
+        log.info('Search data loaded from {}.'.format(search_data_string))
+        return sd
+    except:
+        log.error('Search data could not be loaded from {}.'.format(search_data_string))
+
 
 def plot_params_for_pair(sr1,sr2,dir_string,gene_filter = None,\
                      plot_errorbars=False,\
