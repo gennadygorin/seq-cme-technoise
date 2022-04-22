@@ -34,7 +34,9 @@ def plot_params_for_pair(sr1,sr2,dir_string,gene_filter = None,\
                      axis_search_bounds = True,
                      distinguish_rej = True,
                      plot_identity = True,
-                     meta = '12'):
+                     meta = '12',
+                     xlabel = 'dataset 1',
+                     ylabel = 'dataset 2'):
     fig1,ax1=plt.subplots(nrows=1,ncols=3,figsize=figsize)
 
     if gene_filter is None:
@@ -90,8 +92,8 @@ def plot_params_for_pair(sr1,sr2,dir_string,gene_filter = None,\
                alpha=aesthetics[rej_point_aesth[1]],\
                s=aesthetics[rej_point_aesth[2]])
 
-        ax1[i].set_xlabel(r'dataset 1')
-        ax1[i].set_xlabel(r'dataset 2')
+        ax1[i].set_xlabel(xlabel)
+        ax1[i].set_ylabel(ylabel)
         ax1[i].set_title(sr1.model.get_log_name_str()[i])
         if axis_search_bounds:
             ax1[i].set_xlim([sr1.sp.phys_lb[i],sr1.sp.phys_ub[i]])
