@@ -50,12 +50,12 @@ class InferenceParameters:
 
         if model.seq_model == 'None':
             log.info('Sequencing model set to None. All sampling parameters set to null.')
-            samp_lb = []
-            samp_ub = []
+            samp_lb = [1,1]
+            samp_ub = [1,1]
             gridsize = [1,1]
 
-        self.samp_lb = np.array([1,1])
-        self.samp_ub = np.array([1,1])
+        self.samp_lb = np.array(samp_lb)
+        self.samp_ub = np.array(samp_ub)
         self.gridsize = gridsize
 
 
