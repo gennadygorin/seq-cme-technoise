@@ -714,13 +714,13 @@ class SearchResults:
         
         genes_to_plot = np.asarray(genes_to_plot)
         if genes_to_plot.dtype == bool:
-            gtp_temp = np.arange(sr[0].n_genes)
+            gtp_temp = np.arange(self.n_genes)
             genes_to_plot = gtp_temp[genes_to_plot]
         
         number_of_genes_to_plot = len(genes_to_plot)
-        if number_of_genes_to_plot > sr[0].n_genes:
-            number_of_genes_to_plot = sr[0].n_genes
-            genes_to_plot = genes_to_plot[:sr[0].n_genes]
+        if number_of_genes_to_plot > self.n_genes:
+            number_of_genes_to_plot = self.n_genes
+            genes_to_plot = genes_to_plot[:self.n_genes]
             #this can break...
             
         # if number_of_genes_to_plot is None:
@@ -763,7 +763,7 @@ class SearchResults:
                 ax1[axloc].set_xlim([-0.5,search_data.M[i_]-1.5])
                 ax1[axloc].set_ylim([-0.5,search_data.N[i_]-1.5])
             else:
-                plot_hist_and_fit(ax1[axloc],sd,i_,Pa,marg)
+                plot_hist_and_fit(ax1[axloc],search_data,i_,Pa,marg)
             # if marg=='nascent':
                 # ax1[axloc].hist(search_data.U[i_],
             #                     bins=np.arange(search_data.M[i_])-0.5,\
