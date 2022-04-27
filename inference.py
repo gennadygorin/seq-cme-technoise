@@ -597,7 +597,7 @@ class SearchResults:
             log.info('New optimum: {:.2f}, {:.2f}.'.format(self.samp_optimum[0],self.samp_optimum[1]))
 
             if viz:
-                axloc = np.unravel_index(i_,szfig)
+                axloc = np.unravel_index(i_,szfig) if (szfig[0]>1 and szfig[1]>1) else i_
                 self.plot_landscape(ax1[axloc], gene_filter = gene_filter, levels=30,hideticks=True)
         if viz:
             fig_string = self.analysis_figure_string+'/chisquare_stability.png'
@@ -698,7 +698,7 @@ class SearchResults:
 
     def plot_gene_distributions(self,search_data,sz = (5,5),figsize = (10,10),\
                    marg='joint',logscale=None,title=True,nosamp=False,\
-                   number_of_genes_to_plot=None):
+                   genes_to_plot=None):
         
         if logscale is None:
             if marg=='joint':
@@ -708,18 +708,35 @@ class SearchResults:
 
         (nrows,ncols)=sz
         fig1,ax1=plt.subplots(nrows=nrows,ncols=ncols,figsize=figsize)
-        if number_of_genes_to_plot is None:
-            number_of_genes_to_plot = np.prod(sz)
-        if number_of_genes_to_plot > self.n_genes:
-            number_of_genes_to_plot = self.n_genes
 
-        for i_ in range(number_of_genes_to_plot):
+        if genes_to_plot is None:
+            genes_to_plot = np.arange(np.prod(sz))
+        
+        genes_to_plot = np.asarray(genes_to_plot)
+        if genes_to_plot.dtype == bool:
+            gtp_temp = np.arange(sr[0].n_genes)
+            genes_to_plot = gtp_temp[genes_to_plot]
+        
+        number_of_genes_to_plot = len(genes_to_plot)
+        if number_of_genes_to_plot > sr[0].n_genes:
+            number_of_genes_to_plot = sr[0].n_genes
+            genes_to_plot = genes_to_plot[:sr[0].n_genes]
+            #this can break...
+            
+        # if number_of_genes_to_plot is None:
+        #     number_of_genes_to_plot = np.prod(sz)
+        # if number_of_genes_to_plot > self.n_genes:
+        #     number_of_genes_to_plot = self.n_genes
+
+        j_=0
+        for i_ in genes_to_plot:
             lm = [search_data.M[i_],search_data.N[i_]]
             if marg == 'mature':
                 lm[0]=1
             if marg == 'nascent':
                 lm[1]=1
-            axloc = np.unravel_index(i_,sz)
+            axloc = np.unravel_index(j_,sz) if (sz[0]>1 and sz[1]>1) else j_
+            # axloc = np.unravel_index(i_,sz)
             
             samp = None if (self.model.seq_model == 'None') else self.regressor_optimum[i_]
             Pa = np.squeeze(self.model.eval_model_pss(self.phys_optimum[i_],lm,samp))
@@ -745,28 +762,51 @@ class SearchResults:
                 
                 ax1[axloc].set_xlim([-0.5,search_data.M[i_]-1.5])
                 ax1[axloc].set_ylim([-0.5,search_data.N[i_]-1.5])
-            if marg=='nascent':
-                ax1[axloc].hist(search_data.U[i_],
-                                bins=np.arange(search_data.M[i_])-0.5,\
-                                density=True,log=log,\
-                                color=aesthetics['hist_face_color'])
-                ax1[axloc].plot(np.arange(search_data.M[i_]),Pa,\
-                                color=aesthetics['hist_fit_color'])
-                ax1[axloc].set_xlim([-0.5,search_data.M[i_]-1.5])
+            else:
+                plot_hist_and_fit(ax1[axloc],sd,i_,Pa,marg)
+            # if marg=='nascent':
+                # ax1[axloc].hist(search_data.U[i_],
+            #                     bins=np.arange(search_data.M[i_])-0.5,\
+            #                     density=True,log=log,\
+            #                     color=aesthetics['hist_face_color'])
+            #     ax1[axloc].plot(np.arange(search_data.M[i_]),Pa,\
+            #                     color=aesthetics['hist_fit_color'])
+            #     ax1[axloc].set_xlim([-0.5,search_data.M[i_]-1.5])
                 if logscale:
                     ax1[axloc].set_yscale('log')
-            if marg=='mature':
-                ax1[axloc].hist(search_data.S[i_],
-                                bins=np.arange(search_data.N[i_])-0.5,\
-                                density=True,log=log,\
-                                color=aesthetics['hist_face_color'])
-                ax1[axloc].plot(np.arange(search_data.N[i_]),Pa,\
-                                color=aesthetics['hist_fit_color'])
-                ax1[axloc].set_xlim([-0.5,search_data.N[i_]-1.5])
-                if logscale:
-                    ax1[axloc].set_yscale('log')
+            # if marg=='mature':
+            #     ax1[axloc].hist(search_data.S[i_],
+            #                     bins=np.arange(search_data.N[i_])-0.5,\
+            #                     density=True,log=log,\
+            #                     color=aesthetics['hist_face_color'])
+            #     ax1[axloc].plot(np.arange(search_data.N[i_]),Pa,\
+            #                     color=aesthetics['hist_fit_color'])
+            #     ax1[axloc].set_xlim([-0.5,search_data.N[i_]-1.5])
+            #     if logscale:
+            #         ax1[axloc].set_yscale('log')
+            j_+=1
         fig1.tight_layout(pad=0.02)
 
         fig_string = self.analysis_figure_string+'/gene_distributions_{}.png'.format(marg)
         plt.savefig(fig_string)
         log.info('Figure stored to {}.'.format(fig_string))
+
+def plot_hist_and_fit(ax1,sd,i_,Pa,marg='nascent',\
+                      facecolor=aesthetics['hist_face_color'],\
+                      fitcolor=aesthetics['hist_fit_color'],facealpha=1):
+    if marg=='nascent':
+        ax1.hist(sd.U[i_],
+                        bins=np.arange(sd.M[i_])-0.5,\
+                        density=True,\
+                        color=facecolor,alpha=facealpha)
+        ax1.plot(np.arange(sd.M[i_]),Pa,\
+                        color=fitcolor)
+        ax1.set_xlim([-0.5,sd.U[i_].max()+2.5])
+    elif marg =='mature':
+        ax1.hist(sd.S[i_],
+                        bins=np.arange(sd.N[i_])-0.5,\
+                        density=True,\
+                        color=facecolor,alpha=facealpha)
+        ax1.plot(np.arange(sd.N[i_]),Pa,\
+                        color=fitcolor)
+        ax1.set_xlim([-0.5,sd.S[i_].max()+2.5])

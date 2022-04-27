@@ -48,6 +48,9 @@ def plot_params_for_pair(sr1,sr2,dir_string,gene_filter = None,\
             gf_temp[gene_filter] = True
             gene_filter = gf_temp
             gene_filter_rej = np.zeros(sr1.phys_optimum.shape[0],dtype=bool) #something like this...
+        else:
+            gene_filter = np.copy(gene_filter)
+            gene_filter_rej = np.zeros(gene_filter.shape,dtype=bool)
 
     if distinguish_rej: #default
         if hasattr(sr1,'rejected_genes') and hasattr(sr2,'rejected_genes'):
