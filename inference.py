@@ -718,8 +718,9 @@ class SearchResults:
         (nrows,ncols)=sz
         fig1,ax1=plt.subplots(nrows=nrows,ncols=ncols,figsize=figsize)
 
+        nax = np.prod(sz)
         if genes_to_plot is None:
-            genes_to_plot = np.arange(np.prod(sz))
+            genes_to_plot = np.arange(nax)
         
         genes_to_plot = np.asarray(genes_to_plot)
         if genes_to_plot.dtype == bool:
@@ -730,12 +731,11 @@ class SearchResults:
         if number_of_genes_to_plot > self.n_genes:
             number_of_genes_to_plot = self.n_genes
             genes_to_plot = genes_to_plot[:self.n_genes]
-            #this can break...
+        if number_of_genes_to_plot>nax: #This should no longer break...
+            number_of_genes_to_plot = nax
+            genes_to_plot = genes_to_plot[:nax]
             
-        # if number_of_genes_to_plot is None:
-        #     number_of_genes_to_plot = np.prod(sz)
-        # if number_of_genes_to_plot > self.n_genes:
-        #     number_of_genes_to_plot = self.n_genes
+
 
         j_=0
         for i_ in genes_to_plot:
