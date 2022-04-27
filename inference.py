@@ -26,6 +26,15 @@ aesthetics = {'generic_gene_color':'dimgray',\
               'hist_face_color':'lightgray',\
               'hist_fit_color':'firebrick',\
               'hist_fit_lw':4,\
+              'hist_face_alpha':1,\
+              'hist_face_color_1':'lightsteelblue',\
+              'hist_fit_color_1':'royalblue',\
+              'hist_fit_lw_1':4,
+              'hist_face_alpha_1':0.5,\
+              'hist_face_color_2':'lightcoral',\
+              'hist_fit_color_2':'red',\
+              'hist_fit_lw_2':4,\
+              'hist_face_alpha_2':0.5,\
               'errorbar_gene_color': [203/255,197/255,149/255],\
               'errorbar_gene_alpha':0.3,\
               'errorbar_lw':2,\
@@ -741,10 +750,7 @@ class SearchResults:
             samp = None if (self.model.seq_model == 'None') else self.regressor_optimum[i_]
             Pa = np.squeeze(self.model.eval_model_pss(self.phys_optimum[i_],lm,samp))
 
-            if title: #add a "rejected" thing
-                ax1[axloc].set_title(self.gene_names[i_],fontdict={'fontsize': 9})
-            ax1[axloc].set_xticks([])
-            ax1[axloc].set_yticks([])
+
             if marg=='joint':
                 if logscale:
                     Pa[Pa<1e-10]=1e-10
@@ -764,26 +770,12 @@ class SearchResults:
                 ax1[axloc].set_ylim([-0.5,search_data.N[i_]-1.5])
             else:
                 plot_hist_and_fit(ax1[axloc],search_data,i_,Pa,marg)
-            # if marg=='nascent':
-                # ax1[axloc].hist(search_data.U[i_],
-            #                     bins=np.arange(search_data.M[i_])-0.5,\
-            #                     density=True,log=log,\
-            #                     color=aesthetics['hist_face_color'])
-            #     ax1[axloc].plot(np.arange(search_data.M[i_]),Pa,\
-            #                     color=aesthetics['hist_fit_color'])
-            #     ax1[axloc].set_xlim([-0.5,search_data.M[i_]-1.5])
                 if logscale:
-                    ax1[axloc].set_yscale('log')
-            # if marg=='mature':
-            #     ax1[axloc].hist(search_data.S[i_],
-            #                     bins=np.arange(search_data.N[i_])-0.5,\
-            #                     density=True,log=log,\
-            #                     color=aesthetics['hist_face_color'])
-            #     ax1[axloc].plot(np.arange(search_data.N[i_]),Pa,\
-            #                     color=aesthetics['hist_fit_color'])
-            #     ax1[axloc].set_xlim([-0.5,search_data.N[i_]-1.5])
-            #     if logscale:
-            #         ax1[axloc].set_yscale('log')
+                    ax1[axloc].set_yscale('log')            
+            if title: #add a "rejected" thing
+                ax1[axloc].set_title(self.gene_names[i_],fontdict={'fontsize': 9})
+            ax1[axloc].set_xticks([])
+            ax1[axloc].set_yticks([])
             j_+=1
         fig1.tight_layout(pad=0.02)
 
@@ -793,7 +785,8 @@ class SearchResults:
 
 def plot_hist_and_fit(ax1,sd,i_,Pa,marg='nascent',\
                       facecolor=aesthetics['hist_face_color'],\
-                      fitcolor=aesthetics['hist_fit_color'],facealpha=1):
+                      fitcolor=aesthetics['hist_fit_color'],\
+                      facealpha=aesthetics['hist_face_alpha']):
     if marg=='nascent':
         ax1.hist(sd.U[i_],
                         bins=np.arange(sd.M[i_])-0.5,\
