@@ -77,13 +77,13 @@ def extract_data(loom_filepath, transcriptome_filepath, dataset_name,
     if filter_cells_S>0:
         log.info('Throwing out the {:.0f} highest spliced expression cells.'.format(filter_cells_S))
         n_cells -= filter_cells_S
-        filt = np.argsort(-S.sum(0))[filter_cells:]
+        filt = np.argsort(-S.sum(0))[filter_cells_S:]
         S = S[:,filt]
         U = U[:,filt]
     if filter_cells_U>0:
         log.info('Throwing out the {:.0f} highest unspliced expression cells.'.format(filter_cells_U))
         n_cells -= filter_cells_U
-        filt = np.argsort(-U.sum(0))[filter_cells:]
+        filt = np.argsort(-U.sum(0))[filter_cells_U:]
         S = S[:,filt]
         U = U[:,filt]
 
