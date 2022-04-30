@@ -32,7 +32,7 @@ def extract_data(loom_filepath, transcriptome_filepath, dataset_name,
                     viz=True,\
                     dataset_attr_names=['spliced','unspliced','gene_name','barcode'],\
                     padding = [10,10],
-                    filter_cells = 0):
+                    filter_cells_S = 0, filter_cells_U = 0):
     log.info('Beginning data extraction.')
     log.info('Dataset: '+dataset_name)
 
@@ -74,10 +74,16 @@ def extract_data(loom_filepath, transcriptome_filepath, dataset_name,
     gene_filter = [gene_names.index(gene) for gene in analysis_gene_list]
     gene_names = np.asarray(gene_names)
     S,U,gene_names,len_arr = filter_by_gene(gene_filter,S,U,gene_names,len_arr)
-    if filter_cells>0:
-        log.info('Throwing out the {:.0f} highest spliced expression cells.'.format(filter_cells))
-        n_cells -= filter_cells
+    if filter_cells_S>0:
+        log.info('Throwing out the {:.0f} highest spliced expression cells.'.format(filter_cells_S))
+        n_cells -= filter_cells_S
         filt = np.argsort(-S.sum(0))[filter_cells:]
+        S = S[:,filt]
+        U = U[:,filt]
+    if filter_cells_U>0:
+        log.info('Throwing out the {:.0f} highest unspliced expression cells.'.format(filter_cells_U))
+        n_cells -= filter_cells_U
+        filt = np.argsort(-U.sum(0))[filter_cells:]
         S = S[:,filt]
         U = U[:,filt]
 
