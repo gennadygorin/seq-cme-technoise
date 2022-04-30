@@ -41,7 +41,8 @@ aesthetics = {'generic_gene_color':'dimgray',\
               'length_fit_line_color':'firebrick',\
               'length_fit_face_color':'firebrick',\
               'length_fit_face_alpha':0.5,\
-              'length_fit_lw':4}
+              'length_fit_lw':4,\
+              'linestyle':'-'}
 
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 
@@ -814,7 +815,8 @@ class SearchResults:
 def plot_hist_and_fit(ax1,sd,i_,Pa,marg='nascent',\
                       facecolor=aesthetics['hist_face_color'],\
                       fitcolor=aesthetics['hist_fit_color'],\
-                      facealpha=aesthetics['hist_face_alpha']):
+                      facealpha=aesthetics['hist_face_alpha'],\
+                      linestyle=aesthetics['linestyle']):
     if marg=='nascent':
         ax1.hist(sd.U[i_],
                         bins=np.arange(sd.M[i_])-0.5,\
