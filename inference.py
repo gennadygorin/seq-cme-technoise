@@ -783,6 +783,34 @@ class SearchResults:
         plt.savefig(fig_string)
         log.info('Figure stored to {}.'.format(fig_string))
 
+    def get_logL(self,search_data,EPS=1e-20):    
+        logL = np.zeros(self.n_genes)
+        for gene_index in range(self.n_genes):
+            samp = None if (self.model.seq_model == 'None') else self.regressor_optimum[gene_index]
+            offs = 20
+            lm = [search_data.M[gene_index]+offs,search_data.N[gene_index]+offs]  
+            Pss = self.model.eval_model_pss(self.phys_optimum[gene_index],lm,samp)
+            if np.any(Pss<EPS):
+                Pss[Pss<EPS] = EPS
+            expected_log_lik = np.log(Pss)
+            logL[gene_index] = expected_log_lik[search_data.U[gene_index].astype(int),search_data.S[gene_index].astype(int)].sum()
+        return logL
+
+    def get_logL_Poiss(self,search_data,EPS=1e-20):    
+        logL = np.zeros(self.n_genes)
+        for gene_index in range(self.n_genes):
+            samp = None if (self.model.seq_model == 'None') else self.regressor_optimum[gene_index]
+            offs = 0
+            lm = [search_data.M[gene_index]+offs,search_data.N[gene_index]+offs]  
+            x = np.arange(lm[0])
+            y = np.arange(lm[1])
+            m1 = search_data.moments[gene_index]['U_mean']
+            m2 = search_data.moments[gene_index]['S_mean']
+            expected_log_lik = (x * np.log(m1) - m1 - scipy.special.gammaln(x+1))[:,None] + \
+                               (y * np.log(m2) - m2 - scipy.special.gammaln(y+1))[None,y]
+            logL[gene_index] = expected_log_lik[search_data.U[gene_index].astype(int),search_data.S[gene_index].astype(int)].sum()
+        return logL
+
 def plot_hist_and_fit(ax1,sd,i_,Pa,marg='nascent',\
                       facecolor=aesthetics['hist_face_color'],\
                       fitcolor=aesthetics['hist_fit_color'],\
