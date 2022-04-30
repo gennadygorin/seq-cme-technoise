@@ -823,7 +823,7 @@ def plot_hist_and_fit(ax1,sd,i_,Pa,marg='nascent',\
                         density=True,\
                         color=facecolor,alpha=facealpha)
         ax1.plot(np.arange(sd.M[i_]),Pa,\
-                        color=fitcolor)
+                        color=fitcolor,linestyle=linestyle)
         ax1.set_xlim([-0.5,sd.U[i_].max()+2.5])
     elif marg =='mature':
         ax1.hist(sd.S[i_],
@@ -831,5 +831,5 @@ def plot_hist_and_fit(ax1,sd,i_,Pa,marg='nascent',\
                         density=True,\
                         color=facecolor,alpha=facealpha)
         ax1.plot(np.arange(sd.N[i_]),Pa,\
-                        color=fitcolor)
+                        color=fitcolor,linestyle=linestyle)
         ax1.set_xlim([-0.5,sd.S[i_].max()+2.5])
