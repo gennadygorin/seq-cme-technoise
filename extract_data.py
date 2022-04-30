@@ -79,8 +79,8 @@ def extract_data(loom_filepath, transcriptome_filepath, dataset_name,
         n_cells -= filter_cells
         S = np.sort(S,1)
         U = np.sort(U,1)
-        S = S[:,-filter_cells]
-        U = U[:,-filter_cells]
+        S = S[:,:-filter_cells]
+        U = U[:,:-filter_cells]
 
     if viz:
         for i in range(2):
