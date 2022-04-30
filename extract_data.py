@@ -80,12 +80,6 @@ def extract_data(loom_filepath, transcriptome_filepath, dataset_name,
         filt = np.argsort(-S.sum(0))[filter_cells:]
         S = S[:,filt]
         U = U[:,filt]
-        # filt = sd_arr[1].S[:,]
-        # filt = 
-        # S = np.sort(S,1)
-        # U = np.sort(U,1)
-        # S = S[:,:-filter_cells]
-        # U = U[:,:-filter_cells]
 
     if viz:
         for i in range(2):
@@ -98,7 +92,7 @@ def extract_data(loom_filepath, transcriptome_filepath, dataset_name,
 
     n_genes = len(gene_names)
     M = np.asarray([np.amax(U[gene_index]) for gene_index in range(n_genes)],dtype=int)+padding[0]
-    N = np.asarray([np.amax(S[gene_index]) for gene_index in range(n_genes)],dtype=int)+padding[0]
+    N = np.asarray([np.amax(S[gene_index]) for gene_index in range(n_genes)],dtype=int)+padding[1]
 
     gene_log_lengths = np.log10(len_arr)
 
