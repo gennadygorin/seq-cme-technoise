@@ -75,12 +75,17 @@ def extract_data(loom_filepath, transcriptome_filepath, dataset_name,
     gene_names = np.asarray(gene_names)
     S,U,gene_names,len_arr = filter_by_gene(gene_filter,S,U,gene_names,len_arr)
     if filter_cells>0:
-        log.info('Throwing out the {:.0f} highest-expression cells for each gene.'.format(filter_cells))
+        log.info('Throwing out the {:.0f} highest spliced expression cells.'.format(filter_cells))
         n_cells -= filter_cells
-        S = np.sort(S,1)
-        U = np.sort(U,1)
-        S = S[:,:-filter_cells]
-        U = U[:,:-filter_cells]
+        filt = np.argsort(-S.sum(0))[filter_cells:]
+        S = S[:,filt]
+        U = U[:,filt]
+        # filt = sd_arr[1].S[:,]
+        # filt = 
+        # S = np.sort(S,1)
+        # U = np.sort(U,1)
+        # S = S[:,:-filter_cells]
+        # U = U[:,:-filter_cells]
 
     if viz:
         for i in range(2):
