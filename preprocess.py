@@ -13,7 +13,7 @@ import csv
 import warnings
 
 
-code_ver_global='020'
+code_ver_global='021'
 
 ########################
 ## Debug and error logging
@@ -121,7 +121,7 @@ def construct_batch(loom_filepaths, transcriptome_filepath, dataset_names, batch
     log.info('Gene set size: '+str(len(set_intersection)))
     
     np.random.seed(seed)
-    sampling_gene_set = np.array(list(set_intersection))
+    sampling_gene_set = np.sort(np.array(list(set_intersection)))
     if n_genes < len(sampling_gene_set):
         gene_select = np.random.choice(sampling_gene_set,n_genes,replace=False)
         log.info(str(n_genes)+' genes selected.')

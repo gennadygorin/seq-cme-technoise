@@ -49,7 +49,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 class InferenceParameters:
     def __init__(self,phys_lb,phys_ub,samp_lb,samp_ub,gridsize,dataset_string,model,use_lengths=True,\
-    			 gradient_params = {'max_iterations':10,'init_pattern':'moments','num_restarts':1}):
+    			 gradient_params = {'max_iterations':10,'init_pattern':'moments','num_restarts':1},run_meta=''):
         #this happens before parallelization
         self.gradient_params = gradient_params
         self.phys_lb = np.array(phys_lb)
@@ -75,10 +75,13 @@ class InferenceParameters:
         self.n_phys_pars = len(self.phys_lb)
         self.n_samp_pars = len(self.samp_ub)
 
+        if len(run_meta)>0:
+            run_meta = '_'+run_meta
+
         self.dataset_string = dataset_string
         inference_string = dataset_string + '/' \
             + model.bio_model + '_' + model.seq_model + '_' \
-            + '{:.0f}x{:.0f}'.format(gridsize[0],gridsize[1])
+            + '{:.0f}x{:.0f}'.format(gridsize[0],gridsize[1] + run_meta)
         make_dir(inference_string)
         self.inference_string = inference_string
         inference_parameter_string = inference_string + '/parameters.pr'
