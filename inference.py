@@ -76,12 +76,12 @@ class InferenceParameters:
         self.n_samp_pars = len(self.samp_ub)
 
         if len(run_meta)>0:
-            run_meta = '_'+run_meta
+            run_meta = '_'+run_meta 
 
         self.dataset_string = dataset_string
         inference_string = dataset_string + '/' \
             + model.bio_model + '_' + model.seq_model + '_' \
-            + '{:.0f}x{:.0f}'.format(gridsize[0],gridsize[1] + run_meta)
+            + '{:.0f}x{:.0f}'.format(gridsize[0],gridsize[1]) + run_meta
         make_dir(inference_string)
         self.inference_string = inference_string
         inference_parameter_string = inference_string + '/parameters.pr'
