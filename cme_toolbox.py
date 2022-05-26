@@ -208,5 +208,7 @@ class CMEModel:
             x0 *= samp
         else:
             x0[1:] = x0[1:] * samp
-
+        x0 = np.log10(x0)
+        for j in range(self.get_num_params()):
+            x0[j] = np.clip(x0[j],lb_log[j],ub_log[j])
         return x0
