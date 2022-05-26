@@ -158,8 +158,8 @@ class CMEModel:
         lower bound and upper bound are harmonized with optimization routine and input as log10.
         """
 
-        # lb = 10**lb_log
-        # ub = 10**ub_log
+        lb = 10**lb_log
+        ub = 10**ub_log
         if self.seq_model == 'Poisson':
             samp = 10**samp
         
@@ -208,7 +208,7 @@ class CMEModel:
             x0 *= samp
         else:
             x0[1:] = x0[1:] * samp
-        x0 = np.log10(x0)
         for j in range(self.get_num_params()):
-            x0[j] = np.clip(x0[j],lb_log[j],ub_log[j])
+            x0[j] = np.clip(x0[j],lb[j],ub[j])
+        x0 = np.log10(x0)
         return x0
