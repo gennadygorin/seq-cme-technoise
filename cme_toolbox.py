@@ -76,7 +76,7 @@ class CMEModel:
 
     def eval_model_pgf(self,p,g):
         p = 10**p 
-        if self.bio_model == 'Poisson': #constitutive production
+        if self.bio_model == 'Constitutive': #constitutive production
             beta,gamma = p
             gf = g[0]/beta + g[1]/gamma
         elif self.bio_model == 'Bursty': #bursty production
