@@ -142,15 +142,16 @@ def get_AIC_weights(sr_arr,sd):
 
 def plot_AIC_weights(w,models,figsize=None,                      
                       facecolor=aesthetics['hist_face_color'],\
-                      facealpha=aesthetics['hist_face_alpha'],):
+                      facealpha=aesthetics['hist_face_alpha'],bins=20):
     n_models = w.shape[0]
     if figsize is None:
         figsize = (4*n_models,4)
     fig1,ax1=plt.subplots(nrows=1,ncols=n_models,figsize=figsize)
     for i in range(n_models):
-        ax1[i].hist(w[i],bins=30,\
+        ax1[i].hist(w[i],bins=bins,\
                         density=False,\
                         color=facecolor,alpha=facealpha)
         ax1[i].set_xlabel('AIC weight at MLE')
         ax1[i].set_ylabel('# genes')
         ax1[i].set_title(models[i])
+    fig1.tight_layout()
