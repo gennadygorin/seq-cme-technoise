@@ -39,7 +39,7 @@ class CMEModel:
         elif self.bio_model == 'Bursty':
             return (r'$\log_{10} b$',r'$\log_{10} \beta$',r'$\log_{10} \gamma$')
         elif self.bio_model == 'Extrinsic': 
-            return (r'$\log_{10} b$',r'$\log_{10} \beta$',r'$\log_{10} \gamma$')
+            return (r'$\log_{10} \alpha$',r'$\log_{10} \beta$',r'$\log_{10} \gamma$')
         elif self.bio_model == 'CIR': 
             return (r'$\log_{10} b$',r'$\log_{10} \beta$',r'$\log_{10} \gamma$')
         else:
