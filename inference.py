@@ -627,9 +627,13 @@ class SearchResults:
 
     def plot_param_L_dep(self,gene_filter = None,\
                          plot_errorbars=False,\
-                         figsize=(12,4),c=2.576,\
+                         figsize=None,c=2.576,\
                          axis_search_bounds = True, plot_fit = False,\
                          distinguish_rej = True):
+
+        if figsize is None:
+            figsize = (4*self.model.get_num_params(),4)
+
         fig1,ax1=plt.subplots(nrows=1,ncols=3,figsize=figsize)
 
         if gene_filter is None:

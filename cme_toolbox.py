@@ -45,6 +45,12 @@ class CMEModel:
         else:
             raise ValueError('Please select a biological noise model from {}.'.format(self.available_biomodels))
 
+    def get_num_params(self):
+        if self.bio_model == 'Constitutive':
+            return 2
+        else: 
+            return 3
+
 
     def eval_model_pss(self,p,limits,samp=None):
         u = []

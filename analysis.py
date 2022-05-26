@@ -30,13 +30,17 @@ def load_search_data(search_data_string):
 
 def plot_params_for_pair(sr1,sr2,dir_string,gene_filter = None,\
                      plot_errorbars=False,\
-                     figsize=(12,4),c=2.576,\
+                     figsize=None,c=2.576,\
                      axis_search_bounds = True,
                      distinguish_rej = True,
                      plot_identity = True,
                      meta = '12',
                      xlabel = 'dataset 1',
                      ylabel = 'dataset 2'):
+    
+
+    if figsize is None:
+        figsize = (4*sr1.model.get_num_params(),4)
     fig1,ax1=plt.subplots(nrows=1,ncols=3,figsize=figsize)
 
     if gene_filter is None:
