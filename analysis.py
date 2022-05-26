@@ -41,7 +41,7 @@ def plot_params_for_pair(sr1,sr2,dir_string,gene_filter = None,\
     num_params = sr1.model.get_num_params()
     if figsize is None:
         figsize = (4*num_params,4)
-    fig1,ax1=plt.subplots(nrows=1,ncols=3,figsize=figsize)
+    fig1,ax1=plt.subplots(nrows=1,ncols=num_params,figsize=figsize)
 
     if gene_filter is None:
         gene_filter = np.ones(sr1.phys_optimum.shape[0],dtype=bool)
@@ -128,3 +128,24 @@ def find_most_concordant_samp(sr1,sr2):
 
     log.info('Optimum set to at {:.2f}, {:.2f}.'.format(sr1.samp_optimum[0],sr1.samp_optimum[1]))
     return sr1.samp_optimum
+
+def get_AIC_weights(sr_arr,sd):
+    n_models = len(sr_arr)
+    AIC = []
+    for j in range(n_models):
+        AIC += [2*sr_arr[j].model.get_num_params()-2*sr_arr[j].get_logL(sd)] 
+    AIC = np.asarray(AIC)
+    min_AIC = AIC.min(0)
+    normalization = np.exp(-(AIC - min_AIC)/2).sum(0)
+    w = np.exp(-(AIC - min_AIC)/2) / normalization
+    return w
+
+def plot_AIC_weights(w,models,figsize=None):
+    n_models = w.shape[0]
+    if figsize is None:
+        figsize = (4*n_models,4)
+    fig1,ax1=plt.subplots(nrows=1,ncols=n_models,figsize=figsize)
+    for i in range(n_models):
+        ax1.hist(w[i],bins=30,\
+                        density=True,\
+                        color=facecolor,alpha=facealpha)
