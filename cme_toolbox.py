@@ -75,7 +75,7 @@ class CMEModel:
 
 
     def eval_model_pgf(self,p,g):
-        p = 10**p #these are going to have different interpretations for different models. Should we harmonize them?
+        p = 10**p 
         if self.bio_model == 'Poisson': #constitutive production
             beta,gamma = p
             gf = g[0]/beta + g[1]/gamma
@@ -199,8 +199,8 @@ class CMEModel:
             raise ValueError('Please select from existing models.')
 
         if self.bio_model == 'Constitutive':
-            b *= samp
+            x0 *= samp
         else:
-            b[1:] = b[1:] * samp
+            x0[1:] = x0[1:] * samp
 
         return x0
