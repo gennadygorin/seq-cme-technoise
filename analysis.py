@@ -146,6 +146,6 @@ def plot_AIC_weights(w,models,figsize=None):
         figsize = (4*n_models,4)
     fig1,ax1=plt.subplots(nrows=1,ncols=n_models,figsize=figsize)
     for i in range(n_models):
-        ax1.hist(w[i],bins=30,\
+        ax1[i].hist(w[i],bins=30,\
                         density=True,\
                         color=facecolor,alpha=facealpha)
