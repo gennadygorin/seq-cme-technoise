@@ -379,7 +379,7 @@ class SearchResults:
 
     def plot_param_marg(self,gene_filter=None,nbin=15,fitlaw=scipy.stats.norminvgauss,axis_search_bounds = True,\
                         discard_rejected=True,figsize=None):
-        num_params = sr1.model.get_num_params()
+        num_params = self.model.get_num_params()
         if figsize is None:
             figsize = (4*num_params,4)
         fig1,ax1=plt.subplots(nrows=1,ncols=num_params,figsize=figsize)
