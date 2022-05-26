@@ -379,10 +379,10 @@ class SearchResults:
 
     def plot_param_marg(self,gene_filter=None,nbin=15,fitlaw=scipy.stats.norminvgauss,axis_search_bounds = True,\
                         discard_rejected=True,figsize=None):
-    
+        num_params = sr1.model.get_num_params()
         if figsize is None:
-            figsize = (4*self.model.get_num_params(),4)
-        fig1,ax1=plt.subplots(nrows=1,ncols=3,figsize=figsize)
+            figsize = (4*num_params,4)
+        fig1,ax1=plt.subplots(nrows=1,ncols=num_params,figsize=figsize)
         #this should be its own function
         if gene_filter is None:
             gene_filter = np.ones(self.phys_optimum.shape[0],dtype=bool)
@@ -402,7 +402,7 @@ class SearchResults:
             # gene_filter_rej = 
         param_data = self.phys_optimum[gene_filter,:]
 
-        for i in range(self.model.get_num_params()):
+        for i in range(num_params):
             ax1[i].hist(param_data[:,i],nbin,density=True,\
                         color=aesthetics['hist_face_color'])
             if fitlaw is not None:
@@ -633,11 +633,11 @@ class SearchResults:
                          figsize=None,c=2.576,\
                          axis_search_bounds = True, plot_fit = False,\
                          distinguish_rej = True):
-
+        num_params = self.model.get_num_params()
         if figsize is None:
-            figsize = (4*self.model.get_num_params(),4)
+            figsize = (4*num_params,4)
 
-        fig1,ax1=plt.subplots(nrows=1,ncols=3,figsize=figsize)
+        fig1,ax1=plt.subplots(nrows=1,ncols=num_params,figsize=figsize)
 
         if gene_filter is None:
             gene_filter = np.ones(self.phys_optimum.shape[0],dtype=bool)
@@ -667,9 +667,8 @@ class SearchResults:
             acc_point_aesth = ('generic_gene_color','generic_gene_alpha','generic_gene_ms')
             log.info('Falling back on generic marker properties.') 
 
-        for i in range(self.model.get_num_params()):
+        for i in range(num_params):
             if plot_errorbars:
-                # raise ValueError('I still need to implement this.')
 
                 lfun = lambda x,a,b: a*x+b
                 if plot_fit:

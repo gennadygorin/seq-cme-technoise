@@ -38,9 +38,9 @@ def plot_params_for_pair(sr1,sr2,dir_string,gene_filter = None,\
                      xlabel = 'dataset 1',
                      ylabel = 'dataset 2'):
     
-
+    num_params = sr1.model.get_num_params()
     if figsize is None:
-        figsize = (4*sr1.model.get_num_params(),4)
+        figsize = (4*num_params,4)
     fig1,ax1=plt.subplots(nrows=1,ncols=3,figsize=figsize)
 
     if gene_filter is None:
