@@ -378,8 +378,11 @@ class SearchResults:
             log.info('Figure stored to {}.'.format(fig_string))
 
     def plot_param_marg(self,gene_filter=None,nbin=15,fitlaw=scipy.stats.norminvgauss,axis_search_bounds = True,\
-                        discard_rejected=True):
-        fig1,ax1=plt.subplots(nrows=1,ncols=3,figsize=(12,4))
+                        discard_rejected=True,figsize=None):
+    
+        if figsize is None:
+            figsize = (4*self.model.get_num_params(),4)
+        fig1,ax1=plt.subplots(nrows=1,ncols=3,figsize=figsize)
         #this should be its own function
         if gene_filter is None:
             gene_filter = np.ones(self.phys_optimum.shape[0],dtype=bool)
@@ -399,7 +402,7 @@ class SearchResults:
             # gene_filter_rej = 
         param_data = self.phys_optimum[gene_filter,:]
 
-        for i in range(3):
+        for i in range(self.model.get_num_params()):
             ax1[i].hist(param_data[:,i],nbin,density=True,\
                         color=aesthetics['hist_face_color'])
             if fitlaw is not None:
@@ -664,7 +667,7 @@ class SearchResults:
             acc_point_aesth = ('generic_gene_color','generic_gene_alpha','generic_gene_ms')
             log.info('Falling back on generic marker properties.') 
 
-        for i in range(3):
+        for i in range(self.model.get_num_params()):
             if plot_errorbars:
                 # raise ValueError('I still need to implement this.')
 
