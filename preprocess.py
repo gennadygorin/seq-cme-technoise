@@ -213,14 +213,21 @@ def import_h5ad(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr):
     #Imports anndata file with spliced and unspliced RNA counts.
     warnings.filterwarnings("ignore",category=DeprecationWarning)
     ds = ad.read_h5ad(filename)
-    # with lp.connect(filename) as ds:
-    S = ds.layers[spliced_layer][:]
-    U = ds.layers[unspliced_layer][:]
-    gene_names = ds.obs[gene_attr]
-    nCells = len(ds.var[cell_attr])
+    S = np.asarray(ds.layers[spliced_layer].todense())
+    U = np.asarray(ds.layers[unspliced_layer].todense())
+    gene_names = ds.var[gene_attr].to_numpy()
+    nCells = len(ds.obs[cell_attr])
     warnings.resetwarnings()
     return S,U,gene_names,nCells
 
+def import_mtx(dir_name):
+    dir_name = dir_name.strip('/') 
+    ds = ad.read_mtx(dir_name+'/spliced.mtx')
+    nCells = ds.shape[0]
+    S = ds.X.todense()
+    U = ad.read_mtx(dir_name+'/unspliced.mtx').todense()
+    gene_names = np.loadtxt(dir_name+'/spliced.genes.txt',dtype=str)
+    return S,U,gene_names,nCells
 
 def import_vlm(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr):
     #Imports a velocyto loom file with spliced and unspliced RNA counts.
