@@ -221,7 +221,7 @@ def import_h5ad(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr):
     return S,U,gene_names,nCells
 
 def import_mtx(dir_name):
-    dir_name = dir_name.strip('/') 
+    dir_name = dir_name.rstrip('/') 
     ds = ad.read_mtx(dir_name+'/spliced.mtx')
     nCells = ds.shape[0]
     S = ds.X.todense().T
