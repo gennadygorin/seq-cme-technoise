@@ -225,7 +225,7 @@ def import_mtx(dir_name):
     ds = ad.read_mtx(dir_name+'/spliced.mtx')
     nCells = ds.shape[0]
     S = ds.X.todense().T
-    U = ad.read_mtx(dir_name+'/unspliced.mtx').todense().T
+    U = ad.read_mtx(dir_name+'/unspliced.mtx').X.todense().T
     gene_names = np.loadtxt(dir_name+'/spliced.genes.txt',dtype=str)
     return S,U,gene_names,nCells
 
