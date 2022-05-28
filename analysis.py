@@ -140,17 +140,22 @@ def get_AIC_weights(sr_arr,sd):
     w = np.exp(-(AIC - min_AIC)/2) / normalization
     return w
 
-def plot_AIC_weights(w,models,analysis_dir_string,meta=None,figsize=None,                      
+def plot_AIC_weights(w,models,analysis_dir_string,ax1=None,meta=None,figsize=None,                      
                       facecolor=aesthetics['hist_face_color'],\
-                      facealpha=aesthetics['hist_face_alpha'],bins=20):
+                      facealpha=aesthetics['hist_face_alpha'],bins=20,savefig=False):
     if meta is None:
         meta = ''
     else:
         meta = '_'+meta    
+
     n_models = w.shape[0]
     if figsize is None:
         figsize = (4*n_models,4)
-    fig1,ax1=plt.subplots(nrows=1,ncols=n_models,figsize=figsize)
+
+    if ax1 is None:
+        fig1,ax1=plt.subplots(nrows=1,ncols=n_models,figsize=figsize)
+
+
     for i in range(n_models):
         ax1[i].hist(w[i],bins=bins,\
                         density=False,\
@@ -158,8 +163,9 @@ def plot_AIC_weights(w,models,analysis_dir_string,meta=None,figsize=None,
         ax1[i].set_xlabel('AIC weight at MLE')
         ax1[i].set_ylabel('# genes')
         ax1[i].set_title(models[i])
-    fig1.tight_layout()
 
-    fig_string = analysis_dir_string+'/AIC_comparison{}.png'.format(meta)
-    plt.savefig(fig_string)
-    log.info('Figure stored to {}.'.format(fig_string))
+    if savefig:
+        fig_string = analysis_dir_string+'/AIC_comparison{}.png'.format(meta)
+
+        plt.savefig(fig_string)
+        log.info('Figure stored to {}.'.format(fig_string))

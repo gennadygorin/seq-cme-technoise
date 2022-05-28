@@ -80,8 +80,8 @@ class CMEModel:
         return Pss.squeeze()
 
 
-    def eval_model_pgf(self,p,g):
-        p = 10**p 
+    def eval_model_pgf(self,p_,g):
+        p = 10**p_
         if self.bio_model == 'Constitutive': #constitutive production
             beta,gamma = p
             gf = g[0]/beta + g[1]/gamma
@@ -212,3 +212,47 @@ class CMEModel:
             x0[j] = np.clip(x0[j],lb[j],ub[j])
         x0 = np.log10(x0)
         return x0
+
+    def eval_model_noise(self,p,samp=None):
+        p=10**p
+        if self.bio_model == 'Constitutive': #constitutive production
+            beta,gamma = p
+            mu = [1/beta,1/gamma]
+        elif self.bio_model == 'Bursty': #bursty production
+            b,beta,gamma = p
+            mu = [b/beta,b/gamma]
+        elif self.bio_model == 'Extrinsic': #constitutive production with extrinsic noise
+            alpha,beta,gamma = p
+            mu = [alpha/beta,alpha/gamma]
+        elif self.bio_model == 'Delay': #bursty production with delayed degradation
+            raise ValueError('Not yet implemented!')    
+        elif self.bio_model == 'CIR': #CIR-like:
+            b,beta,gamma = p
+            mu = [b/beta,b/gamma]
+
+        mu = np.asarray(mu)
+        noise_int = 1/mu
+
+        if self.bio_model == 'Constitutive': #constitutive production
+            noise_ext = [0,0]
+        elif self.bio_model == 'Bursty': #bursty production
+            noise_ext = [beta,beta*gamma/(beta+gamma)]
+        elif self.bio_model == 'Extrinsic': #constitutive production with extrinsic noise
+            noise_ext = [1/alpha,1/alpha]
+        elif self.bio_model == 'Delay': #bursty production with delayed degradation
+            raise ValueError('Not yet implemented!')    
+        elif self.bio_model == 'CIR': #CIR-like:
+            noise_ext = [beta,beta*gamma/(beta+gamma)]
+        noise_ext = np.asarray(noise_ext)
+
+        if self.seq_model == 'None':
+            noise = noise_int + noise_ext
+            return (noise_int/noise, noise_ext/noise)
+        elif self.seq_model == 'Bernoulli':
+            noise = noise_int/samp + noise_ext
+            return (noise_int/noise, noise_ext/noise, 1-noise_int/noise-noise_ext/noise)
+        elif self.seq_model == 'Poisson':
+            samp = 10**samp
+            noise_tech = 1/(mu*samp)
+            noise = noise_int + noise_ext + noise_tech
+            return (noise_int/noise, noise_ext/noise, noise_tech/noise)

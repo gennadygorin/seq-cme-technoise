@@ -821,6 +821,14 @@ class SearchResults:
             logL[gene_index] = expected_log_lik[search_data.U[gene_index].astype(int),search_data.S[gene_index].astype(int)].sum()
         return logL
 
+    def get_noise_decomp(self):
+        f = []
+        for gene_index in range(self.n_genes):
+            samp = None if (self.model.seq_model == 'None') else self.regressor_optimum[gene_index]
+            f.append([self.model.eval_model_noise(self,self.phys_optimum[gene_index],samp=samp)])
+        return np.asarray(f)
+
+
 def plot_hist_and_fit(ax1,sd,i_,Pa,marg='nascent',\
                       facecolor=aesthetics['hist_face_color'],\
                       fitcolor=aesthetics['hist_fit_color'],\
