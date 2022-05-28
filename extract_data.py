@@ -3,7 +3,7 @@ import csv
 import matplotlib.pyplot as plt
 import pickle
 
-from preprocess import identify_annotated_genes, get_transcriptome, import_vlm, filter_by_gene, make_dir
+from preprocess import identify_annotated_genes, get_transcriptome, import_raw, filter_by_gene, make_dir
 
 
 code_ver_global='020'
@@ -15,7 +15,7 @@ import logging, sys
 
 logging.basicConfig(stream=sys.stdout)
 log = logging.getLogger()
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
 
 import logging.config
 logging.config.dictConfig({
@@ -37,7 +37,7 @@ def extract_data(loom_filepath, transcriptome_filepath, dataset_name,
     log.info('Dataset: '+dataset_name)
 
     transcriptome_dict = get_transcriptome(transcriptome_filepath)
-    S,U,gene_names,n_cells = import_vlm(loom_filepath,*dataset_attr_names)
+    S,U,gene_names,n_cells = import_raw(loom_filepath,*dataset_attr_names)
 
     #identify genes that are in the length annotations. discard all the rest.
     #for models without length-based sequencing, this may not be necessary 

@@ -78,7 +78,7 @@ def construct_batch(loom_filepaths, transcriptome_filepath, dataset_names, batch
         loom_filepath = loom_filepaths[dataset_index]
         log.info('Dataset: '+dataset_names[dataset_index])
         dataset_attr_names = attribute_names[dataset_index] #pull out the correct attribute names
-        S,U,gene_names,n_cells = import_vlm(loom_filepath,*dataset_attr_names)
+        S,U,gene_names,n_cells = import_raw(loom_filepath,*dataset_attr_names)
         log.info(str(n_cells)+ ' cells detected.')
 
         #identify genes that are in the length annotations. discard all the rest.
@@ -197,6 +197,27 @@ def make_dir(dir_string):
         log.info('Directory ' + dir_string+ ' created.')
     except OSError as error: 
         log.warning('Directory ' + dir_string + ' already exists.')
+
+def import_raw(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr):
+    fn_extension = filename.split('.')[-1]
+    if fn_extension == 'loom': #loom file
+        return import_vlm(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr)
+    elif fn_extension == 'h5ad':
+        return import_h5ad(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr)
+    else:
+        return import_mtx(filename)
+
+def import_h5ad(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr):
+    #Imports anndata file with spliced and unspliced RNA counts.
+    warnings.filterwarnings("ignore",category=DeprecationWarning)
+    with lp.connect(filename) as ds:
+        S = ds.layers[spliced_layer][:]
+        U = ds.layers[unspliced_layer][:]
+        gene_names = ds.ra[gene_attr]
+        nCells = len(ds.ca[cell_attr])
+    warnings.resetwarnings()
+    return S,U,gene_names,nCells
+
 
 def import_vlm(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr):
     #Imports a velocyto loom file with spliced and unspliced RNA counts.
