@@ -144,7 +144,7 @@ class SearchData:
         for j in range(len(input_data)):
             setattr(self,attr_names[j],input_data[j])
     def get_noise_decomp(self,sizefactor = 'pf',pf_after_log=True,lognormalize=True):
-        f = np.zeros((n_genes,2,2)) #genes -- bio vs tech -- species
+        f = np.zeros((self.n_genes,2,2)) #genes -- bio vs tech -- species
 
         CV2 = self.S.var(1)/self.S.mean(1)**2
 
@@ -176,5 +176,5 @@ class SearchData:
         CV2_ = U_.var(1)/U_.mean(1)**2
 
         f[:,0,0] = CV2_/CV2
-        f[:,1,0] = 1-f[:,0,1]
+        f[:,1,0] = 1-f[:,0,0]
         
