@@ -178,3 +178,4 @@ class SearchData:
         f[:,0,0] = CV2_/CV2
         f[:,1,0] = 1-f[:,0,0]
         
+        return f
