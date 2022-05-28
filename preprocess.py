@@ -22,7 +22,7 @@ import logging, sys
 
 logging.basicConfig(stream=sys.stdout)
 log = logging.getLogger()
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
 
 import logging.config
 logging.config.dictConfig({
