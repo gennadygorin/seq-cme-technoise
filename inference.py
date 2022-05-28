@@ -826,7 +826,7 @@ class SearchResults:
         for gene_index in range(self.n_genes):
             samp = None if (self.model.seq_model == 'None') else self.regressor_optimum[gene_index]
             f.append([self.model.eval_model_noise(self.phys_optimum[gene_index],samp=samp)])
-        return np.asarray(f)
+        return np.asarray(f).squeeze()
 
 
 def plot_hist_and_fit(ax1,sd,i_,Pa,marg='nascent',\
