@@ -5,12 +5,14 @@ import matplotlib.pyplot as plt
 
 import time
 import loompy as lp
+import anndata as ad
 import os
 from datetime import datetime
 import pytz
 import collections
 import csv
 import warnings
+
 
 
 code_ver_global='021'
@@ -210,11 +212,12 @@ def import_raw(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr):
 def import_h5ad(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr):
     #Imports anndata file with spliced and unspliced RNA counts.
     warnings.filterwarnings("ignore",category=DeprecationWarning)
-    with lp.connect(filename) as ds:
-        S = ds.layers[spliced_layer][:]
-        U = ds.layers[unspliced_layer][:]
-        gene_names = ds.ra[gene_attr]
-        nCells = len(ds.ca[cell_attr])
+    ds = ad.read_h5ad(filename)
+    # with lp.connect(filename) as ds:
+    S = ds.layers[spliced_layer][:]
+    U = ds.layers[unspliced_layer][:]
+    gene_names = ds.obs[gene_attr]
+    nCells = len(ds.var[cell_attr])
     warnings.resetwarnings()
     return S,U,gene_names,nCells
 

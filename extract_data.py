@@ -3,25 +3,10 @@ import csv
 import matplotlib.pyplot as plt
 import pickle
 
-from preprocess import identify_annotated_genes, get_transcriptome, import_raw, filter_by_gene, make_dir
+from preprocess import * #identify_annotated_genes, get_transcriptome, import_raw, filter_by_gene, make_dir
 
 
-code_ver_global='020'
 
-########################
-## Debug and error logging
-########################
-import logging, sys
-
-logging.basicConfig(stream=sys.stdout)
-log = logging.getLogger()
-log.setLevel(logging.INFO)
-
-import logging.config
-logging.config.dictConfig({
-    'version': 1,
-    'disable_existing_loggers': True,
-})
 
 ########################
 ## Main code
