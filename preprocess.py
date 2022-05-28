@@ -36,7 +36,7 @@ logging.config.dictConfig({
 ## Main code
 ########################
 
-def construct_batch(loom_filepaths, transcriptome_filepath, dataset_names, batch_id=1,\
+def construct_batch(dataset_filepaths, transcriptome_filepath, dataset_names, batch_id=1,\
                     n_genes=100, seed=6, viz=True,\
                     filt_param={'min_U_mean':0.01,'min_S_mean':0.01,'max_U_max':400,\
                                 'max_S_max':400,'min_U_max':3,'min_S_max':3},\
@@ -50,26 +50,33 @@ def construct_batch(loom_filepaths, transcriptome_filepath, dataset_names, batch
     list of genes to analyze.
 
     Input: 
-    loom_filepaths: 
-    transcriptome_filepath:
-    n_genes: 
-    seed:
-    filt_param:    
-    batch_location: the parent directory (no trailing /).
-    meta: any string metadata. I recommend putting number of genes here.
+    dataset_filepaths: string, or list of strings, giving locations of files with count data. Loom, adata, mtx supported.
+    transcriptome_filepath: string giving location of file with gene length annotations.
+    dataset_names: dataset metadata; names assigned to dataset-specific folders.
     batch_id: experiment number.
+    n_genes: number of genes to select.
+    seed: gene selection seed.
+    viz: whether to visualize and save an expression vs. gene length figure.
+    filt_param: bounds on mean and maximum counts.
+    attribute_names: spliced layer, unspliced layer, gene name, and cell barcode attribute names in adata and loom files.
+    meta: any string metadata, e.g. number of genes.
     datestring: current date, in ISO format. Califonia time by default.
     creator: creator initials.
     code_ver: version of the code used to perform the experiment.
+    batch_location: directory where the analysis should be located.
+
+    Output:
+    dir_string: newly created analysis directory.
+    dataset_strings: dataset-specific directories.
     """
     log.info('Beginning data preprocessing and filtering.')
-    dir_string = batch_location + '/' + ('_'.join((creator, datestring, code_ver, meta, str(batch_id))))
+    dir_string = batch_location.rstrip('/') + '/' + ('_'.join((creator, datestring, code_ver, meta, str(batch_id))))
     make_dir(dir_string)
     dataset_strings = []
 
-    if type(loom_filepaths) is str:
-        loom_filepaths = [loom_filepaths] #if we get in a single string, we are processing one file /
-    n_datasets = len(loom_filepaths)
+    if type(dataset_filepaths) is str:
+        dataset_filepaths = [dataset_filepaths] #if we get in a single string, we are processing one file /
+    n_datasets = len(dataset_filepaths)
 
     if type(attribute_names[0]) is str:
         attribute_names = [attribute_names]*n_datasets
@@ -77,10 +84,10 @@ def construct_batch(loom_filepaths, transcriptome_filepath, dataset_names, batch
     transcriptome_dict = get_transcriptome(transcriptome_filepath)
 
     for dataset_index in range(n_datasets):
-        loom_filepath = loom_filepaths[dataset_index]
+        dataset_filepath = dataset_filepaths[dataset_index]
         log.info('Dataset: '+dataset_names[dataset_index])
         dataset_attr_names = attribute_names[dataset_index] #pull out the correct attribute names
-        S,U,gene_names,n_cells = import_raw(loom_filepath,*dataset_attr_names)
+        S,U,gene_names,n_cells = import_raw(dataset_filepath,*dataset_attr_names)
         log.info(str(n_cells)+ ' cells detected.')
 
         #identify genes that are in the length annotations. discard all the rest.
@@ -149,14 +156,19 @@ def construct_batch(loom_filepaths, transcriptome_filepath, dataset_names, batch
 ## Helper functions
 ########################
 
-# def filter_by_gene(filter,S,U,gene_names):
-#     #take in a Boolean or integer filter over genes, select the entries of inputs that match the filter.
-#     S = S[filter,:]
-#     U = U[filter,:]
-#     gene_names = gene_names[filter]
-#     return S,U,gene_names
 def filter_by_gene(filter,*args):
-    #take in a Boolean or integer filter over genes, select the entries of inputs that match the filter.
+    """
+    This function takes in a filter over genes,
+    then selects the entries of inputs that match the filter.
+    Usage: S_filt, U_filt = filter_by_gene(filter,S,U)
+
+    Input: 
+    filter: boolean or integer filter over the gene dimension.
+    args: arrays with dimension 0 that matches the filter dimension.
+
+    Output:
+    tuple(out): tuple of filtered args.
+    """
     out = []
     for arg in args:
         out += [arg[filter].squeeze()]
@@ -169,7 +181,17 @@ def threshold_by_expression(S,U,
                 'max_S_max':350,\
                 'min_U_max':4,\
                 'min_S_max':4}):
-    #take in S, U, and a dict of thresholds for mean and max, output a Boolean filter of genes that meet these thresholds.
+    """
+    This function takes in raw spliced and unspliced counts, as well as threshold parameters, and 
+    outputs a boolean filter of genes that meet these thresholds.
+
+    Input: 
+    S: spliced matrix. Note this is always genes x cells.
+    U: unspliced matrix. Note this is always genes x cells.
+
+    Output:
+    gene_exp_filter: genes that meet the expression thresholds.
+    """
     S_max = S.max(1)
     U_max = U.max(1)
     S_mean = S.mean(1)
@@ -187,13 +209,25 @@ def threshold_by_expression(S,U,
 
 
 def save_gene_list(dir_string,gene_list,filename):
-    #saves a list of genes to csv format.
+    """
+    This function saves a list of genes to disk..
+
+    Input: 
+    dir_string: analysis directory string.
+    gene_list: list of genes.
+    filename: file name string.
+    """
     with open(dir_string+'/'+filename+'.csv','w') as f:
         writer = csv.writer(f)
         writer.writerow(gene_list)
 
 def make_dir(dir_string):
-    #attempts to create a directory.
+    """
+    This function attempts to create a directory.
+
+    Input: 
+    dir_string: directory string.
+    """    
     try: 
         os.mkdir(dir_string) 
         log.info('Directory ' + dir_string+ ' created.')
@@ -201,6 +235,20 @@ def make_dir(dir_string):
         log.warning('Directory ' + dir_string + ' already exists.')
 
 def import_raw(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr):
+    """
+    This function attempts to import raw data from a disk object (loom, adata, or mtx).
+
+    Input: 
+    filename: file location string is loom or adata, directory string if mtx.
+    spliced_layer: name of spliced layer in disk object.
+    unspliced_layer: name of unspliced layer in disk object.
+    gene_attr: name of gene name attribute in disk object.
+    cell_attr: name of cell barcode attribute in disk object.
+
+    Output:
+    Tuple of spliced matrix, unspliced matrix, gene names, number of cells.
+    """
+
     fn_extension = filename.split('.')[-1]
     if fn_extension == 'loom': #loom file
         return import_vlm(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr)
@@ -210,7 +258,11 @@ def import_raw(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr):
         return import_mtx(filename)
 
 def import_h5ad(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr):
-    #Imports anndata file with spliced and unspliced RNA counts.
+    """
+    Imports an anndata file with spliced and unspliced RNA counts.
+    Note row/column convention is opposite loompy.
+    Conventions as in import_raw.
+    """
     warnings.filterwarnings("ignore",category=DeprecationWarning)
     ds = ad.read_h5ad(filename)
     S = np.asarray(ds.layers[spliced_layer].todense()).T
@@ -221,6 +273,11 @@ def import_h5ad(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr):
     return S,U,gene_names,nCells
 
 def import_mtx(dir_name):
+    """
+    Imports mtx files with spliced and unspliced RNA counts via anndata object.
+    Note row/column convention is opposite loompy.
+    Conventions as in import_raw.
+    """
     dir_name = dir_name.rstrip('/') 
     ds = ad.read_mtx(dir_name+'/spliced.mtx')
     nCells = ds.shape[0]
@@ -230,9 +287,12 @@ def import_mtx(dir_name):
     return S,U,gene_names,nCells
 
 def import_vlm(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr):
-    #Imports a velocyto loom file with spliced and unspliced RNA counts.
-    #Note that there is a new deprecation warning in the h5py package 
-    #underlying loompy.
+    """
+    Imports mtx files with spliced and unspliced RNA counts via anndata object.
+    Note that there is a new deprecation warning in the h5py package 
+    underlying loompy.
+    Conventions as in import_raw.
+    """
     warnings.filterwarnings("ignore",category=DeprecationWarning)
     with lp.connect(filename) as ds:
         S = ds.layers[spliced_layer][:]
@@ -244,13 +304,19 @@ def import_vlm(filename,spliced_layer,unspliced_layer,gene_attr,cell_attr):
 
 def get_transcriptome(transcriptome_filepath,repeat_thr=15):
     """
-    Imports transcriptome length/repeat from a previously generated file. Input:
+    Imports transcriptome length/repeat from a previously generated file. 
+
+    Input:
     transcriptome_filepath: path to the file. This is a simple space-separated file.
         The convention for each line is name - length - 5mers - 6mers -.... 50mers - more
     repeat_thr: threshold for minimum repeat length to consider. 
         By default, this is 15, and so will return number of polyA stretches of 
         length 15 or more in the gene.
-    the repeat dictionary is not used in this version of the code.
+
+    Output:
+    len_dict: dictionary with structure {gene name : gene length}
+
+    The repeat dictionary is not used in this version of the code.
     """
     repeat_dict = {}
     len_dict = {}
@@ -262,16 +328,25 @@ def get_transcriptome(transcriptome_filepath,repeat_thr=15):
             len_dict[d[0]] =  int(d[1])
     return len_dict
 
-def identify_annotated_genes(gene_names_vlm,feat_dict):
-    #check which genes have length data.
-    n_gen_tot = len(gene_names_vlm)
-    sel_ind_annot = [k for k in range(len(gene_names_vlm)) if gene_names_vlm[k] in feat_dict]
-    
-    NAMES = [gene_names_vlm[k] for k in range(len(sel_ind_annot))]
-    COUNTS = collections.Counter(NAMES)
-    sel_ind = [x for x in sel_ind_annot if COUNTS[gene_names_vlm[x]]==1]
+def identify_annotated_genes(gene_names,feat_dict):
+    """
+    This function checks which gene names are unique and have annotations in a feature dictionary.
 
-    log.info(str(len(gene_names_vlm))+' features observed, '+str(len(sel_ind_annot))+' match genome annotations. '
+    Input:
+    gene_names: string np array of gene names.
+    feat_dict: annotation dictionary output by get_transcriptome.
+
+    Output:
+    ann_filt: boolean filter of genes that have annotations.
+    """
+    n_gen_tot = len(gene_names)
+    sel_ind_annot = [k for k in range(len(gene_names)) if gene_names[k] in feat_dict]
+    
+    NAMES = [gene_names[k] for k in range(len(sel_ind_annot))]
+    COUNTS = collections.Counter(NAMES)
+    sel_ind = [x for x in sel_ind_annot if COUNTS[gene_names[x]]==1]
+
+    log.info(str(len(gene_names))+' features observed, '+str(len(sel_ind_annot))+' match genome annotations. '
         +str(len(sel_ind))+' were unique.')
 
     ann_filt = np.zeros(n_gen_tot,dtype=bool)
