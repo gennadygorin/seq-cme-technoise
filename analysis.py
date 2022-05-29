@@ -280,7 +280,7 @@ def plot_AIC_weights(sr_arr,sd,models,ax1=None,meta=None,figsize=None,
 
     fig1.tight_layout()
     if savefig:
-        fig_string = batch_analysis_string+'/AIC_comparison{}.png'.format(meta)
+        fig_string = sr_arr[0].batch_analysis_string+'/AIC_comparison{}.png'.format(meta)
 
         plt.savefig(fig_string)
         log.info('Figure stored to {}.'.format(fig_string))
@@ -310,7 +310,7 @@ def compare_AIC_weights(w,dataset_names,batch_analysis_string,model_ind=0,figsiz
             if i>k:
                 xx = np.linspace(-0.2, 1.2, 2000)
                 
-                kde = stats.gaussian_kde(np.abs(w[i,model_ind,:]-w[k,model_ind,:]),kde_bw=kde_bw)
+                kde = stats.gaussian_kde(np.abs(w[i,model_ind,:]-w[k,model_ind,:]),bw_method=kde_bw)
                 ax1[i,k].plot(xx, kde(xx),'k')
             if i==k:
                 ax1[i,k].hist(w[i,model_ind,:],30,facecolor=aesthetics['hist_face_color'])
