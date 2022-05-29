@@ -42,7 +42,10 @@ aesthetics = {'generic_gene_color':'dimgray',\
               'length_fit_face_color':'firebrick',\
               'length_fit_face_alpha':0.5,\
               'length_fit_lw':4,\
-              'linestyle':'-'}
+              'linestyle':'-'
+              'init_fit_linestyle':'--',
+              'init_fit_linewidth':1,
+              'diffreg_gene_color':'teal'}
 
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 
@@ -897,7 +900,7 @@ class SearchResults:
                          axis_search_bounds = True, plot_fit = False,\
                          distinguish_rej = True):
         """
-        This method plots the physical parameter inferences at the sampling parameter optimum
+        This method plots the inferred physical parameters at the sampling parameter optimum
         as a function of gene length.
 
         Input:
@@ -931,7 +934,7 @@ class SearchResults:
         #         gene_filter_rej = np.zeros(self.phys_optimum.shape[0],dtype=bool) #something like this...
 
         if distinguish_rej: #default
-            filt_rej = self.get_bool_filt(gene_filter_,discard_rejected=True)
+            filt_rej = self.get_bool_filt(gene_filter_,discard_rejected=True) 
             gene_filter_rej = np.logical_and(gene_filter,np.logical_not(filt_rej)) #subset for rejected genes
             gene_filter = np.logical_and(gene_filter,filt_rej) #subset for non-rejected genes
             # if hasattr(self,'rejected_genes'):
