@@ -86,7 +86,7 @@ def plot_params_for_pair(sr1,sr2,gene_filter_ = None,\
     c: error bar scaling factor. c=2.576 corresponds to a rough 99% CI.
     axis_search_bounds: whether to place the x-limits of the plots at the parameter search bounds.
     distinguish_rej: whether to distinguish genes in the rejected_genes attribute.
-    metadata: figure name metadata.
+    meta: figure name metadata.
     xlabel: name of dataset 1.
     ylabel: name of dataset 2.
     """
@@ -113,41 +113,6 @@ def plot_params_for_pair(sr1,sr2,gene_filter_ = None,\
     else: #don't distinguish
         acc_point_aesth = ('generic_gene_color','generic_gene_alpha','generic_gene_ms')
         log.info('Falling back on generic marker properties.') 
-
-
-    # if gene_filter is None:
-    #     gene_filter = np.ones(sr1.phys_optimum.shape[0],dtype=bool)
-    #     gene_filter_rej = ~gene_filter
-    # else:
-    #     if gene_filter.dtype != np.bool:
-    #         gf_temp = np.zeros(sr1.phys_optimum.shape[0],dtype=bool)
-    #         gf_temp[gene_filter] = True
-    #         gene_filter = gf_temp
-    #         gene_filter_rej = np.zeros(sr1.phys_optimum.shape[0],dtype=bool) #something like this...
-    #     else:
-    #         gene_filter = np.copy(gene_filter)
-    #         gene_filter_rej = np.zeros(gene_filter.shape,dtype=bool)
-
-    # if distinguish_rej: #default
-    #     if hasattr(sr1,'rejected_genes') and hasattr(sr2,'rejected_genes'):
-    #         if sr1.rejection_index != sr1.samp_optimum_ind:
-    #             log.warning('Sampling parameter value is inconsistent.')
-    #             distinguish_rej = False
-    #         elif sr2.rejection_index != sr2.samp_optimum_ind:
-    #             log.warning('Sampling parameter value is inconsistent.')
-    #             distinguish_rej = False
-    #         else: #if everything is ready
-    #             gene_filter_rej =  np.logical_and(gene_filter,np.logical_or(sr1.rejected_genes,sr2.rejected_genes))
-    #             gene_filter = np.logical_and(gene_filter,~sr1.rejected_genes,~sr2.rejected_genes)
-    #             acc_point_aesth = ('accepted_gene_color','accepted_gene_alpha','accepted_gene_ms')
-    #             rej_point_aesth = ('rejected_gene_color','rejected_gene_alpha','rejected_gene_ms')
-    #     else:
-    #         log.info('Gene rejection needs to be precomputed to distinguish rejected points.')
-    #         distinguish_rej = False
-
-    # if not distinguish_rej: #don't distinguish
-    #     acc_point_aesth = ('generic_gene_color','generic_gene_alpha','generic_gene_ms')
-    #     log.info('Falling back on generic marker properties.') 
 
     for i in range(3):
         if plot_errorbars:
@@ -326,3 +291,196 @@ def compare_AIC_weights(w,dataset_names,batch_analysis_string,model_ind=0,figsiz
 
     plt.savefig(fig_string)
     log.info('Figure stored to {}.'.format(fig_string))
+
+def compute_diffreg(sr1,sr2,modeltype='id',gene_filter_ = None,
+                     discard_rejected = True,
+                     use_sigma=True,
+                     figsize=None,
+                     meta = '12',viz=True):
+    """
+    This function uses the optimal physical and sampling parameters obtained for a pair of datasets
+    to attempt to identify sources of differential regulation (DR) under a model of transcription.
+    Specifically, it uses a fixed-point iteration procedure to distinguish a set of genes with
+    Gaussian aleatory variation from a set with systematic, high-magnitude deviations between the datasets.
+
+    Input:
+    sr1: SearchResult instance 1.
+    sr2: SearchResult instance 2.
+    modeltype: which statistical model of variation to fit.
+        If 'id', the relationship between datasets' parameters is assumed to be x + b = y; n_model_pars = 1.
+        If 'lin', the relationship between datasets' parameters is assumed to be ax + b = y; n_model_pars = 2.
+    gene_filter_: 
+        If None, use all genes. 
+        If a boolean or integer filter, use only a subset of genes indicated by the filter.
+    discard_rejected: whether to discard genes in the rejected_genes attribute.
+    use_sigma: whether to use inferred standard error of MLEs to fit the aleatory variation model.
+    figsize: figure dimensions.
+    meta: figure name metadata.
+    viz: whether to plot the histograms of residuals.
+
+    Output:
+    gn: list of size n_phys_pars; each entry contains names of genes identified as DR.
+    gf: ndarray of size n_phys_pars x n_genes; if true, the gene has been identified as DR.
+    offs: ndarray of size n_phys_pars x n_model_pars, contains (b) or (b,a) for each physical parameter.
+    resid: ndarray of size n_phys_pars x n_genes; contains residuals for each parameter under the final fit statistical model.
+    """
+    num_params = sr1.sp.n_phys_pars
+    if viz:
+        if figsize is None:
+            figsize = (4*num_params,4)
+        fig1,ax1=plt.subplots(nrows=1,ncols=num_params,figsize=figsize)
+
+
+    gene_filter = sr1.get_bool_filt(gene_filter_,discard_rejected=False)
+
+    if discard_rejected: #default
+        filt_rej1 = sr1.get_bool_filt(gene_filter_,discard_rejected=True)
+        filt_rej2 = sr2.get_bool_filt(gene_filter_,discard_rejected=True)
+        filt_rej = np.logical_and(filt_rej1, filt_rej2)
+        gene_filter = np.logical_and(gene_filter,filt_rej)
+
+    
+    gn = []
+    gf = []
+    offs = []
+    resid = []
+    
+    parnames = sr1.model.get_log_name_str()
+    for i in range(num_params):
+        
+        if viz:
+            ax = ax1[i]
+        else:
+            ax = None
+        
+        resid_arr = np.asarray([np.nan]*sr1.n_genes)
+        
+        xl = [sr1.sp.phys_lb[i],sr1.sp.phys_ub[i]]
+        if use_sigma:
+            gf_,offs_,resid_ = diffreg_fpi(xl,sr1.phys_optimum[gene_filter,i],sr2.phys_optimum[gene_filter,i],parnames[i],\
+                             modeltype=modeltype,ax1=ax,s1=sr1.sigma[gene_filter,i],s2=sr2.sigma[gene_filter,i],nit=10,viz=viz)
+        else:
+            gf_,offs_,resid_ = diffreg_fpi(xl,sr1.phys_optimum[gene_filter,i],sr2.phys_optimum[gene_filter,i],parnames[i],\
+                             modeltype=modeltype,ax1=ax,s1=None,s2=None,nit=10,viz=viz)
+        resid_arr[gene_filter] = resid_
+
+        filtind = np.arange(sr1.n_genes)
+        filtind = filtind[gene_filter]
+        filtind = filtind[~gf_]
+        gf__ = np.zeros(sr1.n_genes,dtype=bool)
+        gf__[filtind] = True
+        gn_ = sr1.gene_names[gf__]
+        gn.append(gn_)
+        gf.append(gf__)
+        offs.append(offs_)
+        resid.append(resid_arr)
+        
+        if i==0 and viz:
+            ax.legend()
+    if viz:
+        fig1.tight_layout()    
+        fig_string = sr1.batch_analysis_string+'/parameter_residuals_{}.png'.format(meta)
+
+        plt.savefig(fig_string)
+        log.info('Figure stored to {}.'.format(fig_string))
+
+    return  gn, np.asarray(gf), np.asarray(offs), np.asarray(resid)
+
+
+def linoffset(B, x, modeltype='id'):
+    """
+    This helper function defines the statistical model for identifying DR genes.
+
+    Input:
+    B: vector of statistical model parameters of size n_model_pars.
+    x: vector of optimal physical parameters of size n_phys_pars.
+    modeltype: which statistical model of variation to fit.
+        If 'id', the relationship between datasets' parameters is assumed to be x + b = y; n_model_pars = 1.
+        If 'lin', the relationship between datasets' parameters is assumed to be ax + b = y; n_model_pars = 2.
+    """
+    if modeltype=='id':
+        return x + B[0]
+    elif modeltype=='lin':
+        return B[1]*x + B[0]
+
+def diffreg_fpi(xl,m1,m2,parname,modeltype='id',ax1=None,s1=None,s2=None,nit=10,pval = 0.005,viz=True):
+    """
+    This function uses the optimal physical and sampling parameters obtained for a pair of datasets
+    to attempt to identify differentially regulated (DR) genes under a model of transcription, for a single parameter.
+    Specifically, it uses a fixed-point iteration (FPI) procedure to distinguish a set of genes with
+    Gaussian aleatory variation from a set with systematic, high-magnitude deviations between the datasets.
+
+    Input:
+    xl: lower and upper bounds on parameter values.
+    m1: parameter estimates from SearchResult instance 1.
+    m2: parameter estimates from SearchResult instance 2.
+        at this point, the sizes of m1 and m2 might be smaller than n_genes, because some genes may have been filtered out.
+    modeltype: which statistical model of variation to fit.
+        If 'id', the relationship between datasets' parameters is assumed to be x + b = y; n_model_pars = 1.
+        If 'lin', the relationship between datasets' parameters is assumed to be ax + b = y; n_model_pars = 2.
+    ax1: matplotlib axes to plot into.
+    s1: standard error corresponding to m1 estimates.
+    s2: standard error corresponding to m2 estimates.
+    nit: number of FPI iterations. to run.
+    pval: p-value threshold to use for the Z-test.
+    viz: whether to plot the histograms of residuals.
+
+    Output:
+    gf: ndarray of size n_genes_filtered; if true, the gene has been identified as DR.
+    out.beta: ndarray of size n_model_pars, contains (b) or (b,a) for the current physical parameter.
+    resid: ndarray of size n_genes_filtered; contains residuals for the current physical parameter under the final fit statistical model.
+    """
+    fs=12
+    gf = np.ones(len(m1),dtype=bool)
+    x = np.linspace(xl[0], xl[1], 100)
+    fitlaw = scipy.stats.norm
+    
+    if modeltype == 'id':
+        beta0 = [0]
+    elif modeltype == 'lin':
+        beta0 = [0,1]
+    
+    for j in range(nit):
+        if s1 is None and s2 is None:
+            d = odr.Data(m1[gf],m2[gf])
+        else:
+            d = odr.Data(m1[gf],m2[gf],s1[gf],s2[gf])
+            
+        md = lambda B,x : linoffset(B,x,modeltype=modeltype)
+        odrmodel = scipy.odr.Model(md)
+
+        myodr = odr.ODR(d, odrmodel, beta0=beta0)
+        out = myodr.run()
+        
+        if modeltype == 'id':
+            resid = m2-m1-out.beta[0]
+        elif modeltype == 'lin':
+            resid = m2-m1*out.beta[1]-out.beta[0]
+        
+
+        
+        fitparams = fitlaw.fit(resid[gf])
+        p = fitlaw.pdf(x, *fitparams)
+        if j==0 and viz:
+            ax1.plot(x, p, linestyle=aesthetics['init_fit_linestyle'], \
+                        linewidth=aesthetics['init_fit_linewidth'],\
+                        color=aesthetics['hist_fit_color_2'],label='Initial fit')
+
+        z = (resid-fitparams[0])/fitparams[1]
+        gf = np.logical_not((scipy.stats.norm.sf(np.abs(z))*2)<(pval))
+        if j==(nit-1) and viz:
+            n,bins = np.histogram(resid,200,density=True)
+            binc = np.diff(bins)/2 + bins[:-1]
+            ax1.bar(binc,n,width=np.diff(bins),color = aesthetics['hist_face_color'],align='center',
+                   label='Putative static genes')
+            ax1.plot(x, p, linestyle=aesthetics['linestyle'], \
+                        linewidth=2,\
+                        color=aesthetics['hist_fit_color'],label='FPI fit')
+            y_,_ = np.histogram(resid[~gf],bins=bins,density=True)
+            y_ *=(~gf).mean()
+            ax1.bar(binc,y_,width=np.diff(bins),color = aesthetics['diffreg_gene_color'],align='center',
+                label='Putative DR genes')
+    if viz:
+        ax1.set_xlabel(parname+' residual',fontsize=fs)
+        ax1.set_ylabel('Density',fontsize=fs)
+    return gf,out.beta,resid
