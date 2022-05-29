@@ -236,7 +236,7 @@ def get_AIC_weights(sr_arr,sd):
 
 def plot_AIC_weights(sr_arr,sd,models,ax1=None,meta=None,figsize=None,                      
                       facecolor=aesthetics['hist_face_color'],\
-                      facealpha=aesthetics['hist_face_alpha'],nbin=20,savefig=False):
+                      facealpha=aesthetics['hist_face_alpha'],nbin=20,savefig=True):
     """
     This function calls get_AIC_weights and plots the resulting Akaike Information Criterion weights.
 
@@ -278,15 +278,15 @@ def plot_AIC_weights(sr_arr,sd,models,ax1=None,meta=None,figsize=None,
         ax1[i].set_ylabel('# genes')
         ax1[i].set_title(models[i])
 
+    fig1.tight_layout()
     if savefig:
-        fig1.tight_layout()
         fig_string = batch_analysis_string+'/AIC_comparison{}.png'.format(meta)
 
         plt.savefig(fig_string)
         log.info('Figure stored to {}.'.format(fig_string))
     return w
 
-def compare_AIC_weights(w,dataset_names,analysis_dir_string,model_ind=0,figsize=(12,12),kde_bw=0.05):
+def compare_AIC_weights(w,dataset_names,batch_analysis_string,model_ind=0,figsize=(12,12),kde_bw=0.05):
     """
     This function compares the consistency of AIC weights for a single model across several datasets.
     For a given gene and model j, the function takes the weight w_j and compares its absolute difference
@@ -297,7 +297,7 @@ def compare_AIC_weights(w,dataset_names,analysis_dir_string,model_ind=0,figsize=
     Input:
     w: AIC weights corresponding to each model, a n_datasets x n_models x n_genes array.
     dataset_names: dataset name metadata.
-    analysis_dir_string: figure directory location.
+    batch_analysis_string: figure directory location.
     model_ind: which model to plot weights for.
     figsize: figure dimensions.
     kde_bw: kernel density estimate bandwidth.
@@ -310,10 +310,10 @@ def compare_AIC_weights(w,dataset_names,analysis_dir_string,model_ind=0,figsize=
             if i>k:
                 xx = np.linspace(-0.2, 1.2, 2000)
                 
-                kde = stats.gaussian_kde(np.abs(w[i,model_ind,:]-w[k,model_ind,:]),kde_bw=kde_sigma)
+                kde = stats.gaussian_kde(np.abs(w[i,model_ind,:]-w[k,model_ind,:]),kde_bw=kde_bw)
                 ax1[i,k].plot(xx, kde(xx),'k')
             if i==k:
-                ax1[i,k].hist(w[i,model_ind,:],30,facecolor='silver')
+                ax1[i,k].hist(w[i,model_ind,:],30,facecolor=aesthetics['hist_face_color'])
             if i<k:
                 fig1.delaxes(ax1[i,k])
             ax1[i,k].set_yticks([])
@@ -322,7 +322,7 @@ def compare_AIC_weights(w,dataset_names,analysis_dir_string,model_ind=0,figsize=
             if i==(n_datasets-1):
                 ax1[i,k].set_xlabel(dataset_names[k],fontsize=fs)
     fig1.tight_layout()
-    fig_string = analysis_dir_string+'/AIC_comparison_grid.png'
+    fig_string = batch_analysis_string+'/AIC_comparison_grid.png'
 
     plt.savefig(fig_string)
     log.info('Figure stored to {}.'.format(fig_string))
