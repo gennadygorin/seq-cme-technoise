@@ -522,11 +522,13 @@ class SearchResults:
         This method identifies and sets the technical parameter optimum by minimizing the total KLD.
         
         Input:
-        gene_filter: subset of genes to restrict the analysis to.
+        gene_filter: 
+            If None, use all genes. 
+            If a boolean or integer filter, use the filtered gene subset.
+        discard_rejected: whether to omit genes in the rejected_genes attribute.
 
         Output: 
         samp_optimum: sampling parameter optimum value.
-        discard_rejected: whether to omit genes in the rejected_genes attribute.
         """
         if gene_filter is None:
             total_divergence = self.obj_func
@@ -930,8 +932,8 @@ class SearchResults:
 
         if distinguish_rej: #default
             filt_rej = self.get_bool_filt(gene_filter_,discard_rejected=True)
-            gene_filter_rej = np.logical_and(gene_filter,np.logical_not(filt_rej))
-            gene_filter = np.logical_and(gene_filter,filt_rej)
+            gene_filter_rej = np.logical_and(gene_filter,np.logical_not(filt_rej)) #subset for rejected genes
+            gene_filter = np.logical_and(gene_filter,filt_rej) #subset for non-rejected genes
             # if hasattr(self,'rejected_genes'):
             #     if self.rejection_index != self.samp_optimum_ind:
             #         log.warning('Sampling parameter value is inconsistent.')
@@ -997,8 +999,20 @@ class SearchResults:
         log.info('Figure stored to {}.'.format(fig_string))
 
     def plot_gene_distributions(self,search_data,sz = (5,5),figsize = (10,10),\
-                   marg='joint',logscale=None,title=True,nosamp=False,\
+                   marg='joint',logscale=None,title=True,\
                    genes_to_plot=None):
+        """
+        This method plots the gene count distributions and their fits at the sampling parameter optimum.
+
+        Input:
+        search_data: a SearchData instance.
+        sz: subplot dimensions.
+        figsize: figure dimensions.
+        marg: whether to plot 'nascent' or 'mature' marginal, or the 'joint' distribution.
+        logscale: whether to apply a log-transformation to the PMF for ease of visualization.
+        title: whether to name the gene in the title.
+        genes_to_plot: which genes to plot, either a boolean or integer array.
+        """
         
         if logscale is None:
             if marg=='joint':
@@ -1074,7 +1088,17 @@ class SearchResults:
         plt.savefig(fig_string)
         log.info('Figure stored to {}.'.format(fig_string))
 
-    def get_logL(self,search_data,EPS=1e-20):    
+    def get_logL(self,search_data,EPS=1e-20):
+        """
+        This method calculates the log-likelihood for all genes at the sampling parameter optimum.
+
+        Input:
+        search_data: a SearchData instance.
+        EPS: probability rounding parameter -- anything below this is rounded to EPS.
+
+        Output:
+        logL: a vector of size n_genes containing model log-likelihoods.
+        """
         logL = np.zeros(self.n_genes)
         for gene_index in range(self.n_genes):
             samp = None if (self.model.seq_model == 'None') else self.regressor_optimum[gene_index]
@@ -1087,7 +1111,18 @@ class SearchResults:
             logL[gene_index] = expected_log_lik[search_data.U[gene_index].astype(int),search_data.S[gene_index].astype(int)].sum()
         return logL
 
-    def get_logL_Poiss(self,search_data,EPS=1e-20):    
+    def get_logL_Poiss(self,search_data,EPS=1e-20):   
+        """
+        This method calculates the log-likelihood for all genes under the constitutive model with no sampling,
+        i.e., an uncorrelated bivariate Poisson distribution.
+
+        Input:
+        search_data: a SearchData instance.
+        EPS: probability rounding parameter -- anything below this is rounded to EPS.
+
+        Output:
+        logL: a vector of size n_genes containing model log-likelihoods under the Poisson model.
+        """ 
         logL = np.zeros(self.n_genes)
         for gene_index in range(self.n_genes):
             samp = None if (self.model.seq_model == 'None') else self.regressor_optimum[gene_index]
@@ -1102,7 +1137,19 @@ class SearchResults:
             logL[gene_index] = expected_log_lik[search_data.U[gene_index].astype(int),search_data.S[gene_index].astype(int)].sum()
         return logL
 
-    def get_noise_decomp(self):
+    def get_noise_decomp(self):        
+        """
+        This method reports the fractions of normalized variance attributable to intrinsic,
+        extrinsic, and technical noise under the instantiated model, using the eval_model_noise
+        method of the CMEModel class.
+
+        Output: 
+        f: array with size n_genes x 3 x 2. 
+            dim 0: gene
+            dim 1: variance fraction (intrinsic, extrinsic, technical)
+            dim 2: species (unspliced, spliced)
+        The null technical noise model has dim 0 of size 2, as it has no technical noise component.
+        """
         f = []
         for gene_index in range(self.n_genes):
             samp = None if (self.model.seq_model == 'None') else self.regressor_optimum[gene_index]
@@ -1114,6 +1161,20 @@ def plot_hist_and_fit(ax1,sd,i_,Pa,marg='nascent',\
                       fitcolor=aesthetics['hist_fit_color'],\
                       facealpha=aesthetics['hist_face_alpha'],\
                       linestyle=aesthetics['linestyle']):
+    """
+    This helper function plots marginal gene count distributions and their fits at the sampling parameter optimum.
+
+    Input:
+    ax1: the matplotlib axes to plot into.
+    search_data: a SearchData instance.
+    i_: gene index.
+    Pa: model probability mass function
+    marg: whether to plot 'nascent' or 'mature' marginal.
+    facecolor: histogram face color.
+    fitcolor: model fit line color.
+    facealpha: histogram face alpha.
+    linestyle: model fit line style.
+    """
     if marg=='nascent':
         ax1.hist(sd.U[i_],
                         bins=np.arange(sd.M[i_])-0.5,\

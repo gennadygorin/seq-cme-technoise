@@ -66,7 +66,7 @@ def construct_batch(dataset_filepaths, transcriptome_filepath, dataset_names, ba
     batch_location: directory where the analysis should be located.
 
     Output:
-    dir_string: newly created analysis directory.
+    dir_string: newly created batch directory location.
     dataset_strings: dataset-specific directories.
 
     Creates:
@@ -217,7 +217,7 @@ def save_gene_list(dir_string,gene_list,filename):
     This function saves a list of genes to disk..
 
     Input: 
-    dir_string: analysis directory string.
+    dir_string: batch directory location.
     gene_list: list of genes.
     filename: file name string.
     """
