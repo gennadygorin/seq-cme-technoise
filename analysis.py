@@ -2,6 +2,7 @@
 from cme_toolbox import *
 from inference import *
 import pickle
+from scipy import stats
 
 
 ########################
@@ -72,7 +73,7 @@ def plot_params_for_pair(sr1,sr2,gene_filter_ = None,\
                      xlabel = 'dataset 1',
                      ylabel = 'dataset 2'):
     """
-    This method plots the inferred physical parameters at the sampling parameter optimum for a matched pair of datasets.
+    This function plots the inferred physical parameters at the sampling parameter optimum for a matched pair of datasets.
 
     Input:
     sr1: SearchResult instance 1.
@@ -188,7 +189,7 @@ def plot_params_for_pair(sr1,sr2,gene_filter_ = None,\
 
 def find_most_concordant_samp(sr1,sr2):
     """
-    This method attempts to find a search parameter optimum by comparing two matched (control) datasets
+    This function attempts to find a search parameter optimum by comparing two matched (control) datasets
     and finding the point at which their parameter values are most concordant, according to l2 distance over
     all genes and parameters.
     This typically works poorly.
@@ -237,7 +238,7 @@ def plot_AIC_weights(sr_arr,sd,models,ax1=None,meta=None,figsize=None,
                       facecolor=aesthetics['hist_face_color'],\
                       facealpha=aesthetics['hist_face_alpha'],nbin=20,savefig=False):
     """
-    This method calls get_AIC_weights and plots the resulting Akaike Information Criterion weights.
+    This function calls get_AIC_weights and plots the resulting Akaike Information Criterion weights.
 
     Input:
     sr_arr: list of multiple SearchResults objects.
@@ -266,6 +267,8 @@ def plot_AIC_weights(sr_arr,sd,models,ax1=None,meta=None,figsize=None,
 
     if ax1 is None:
         fig1,ax1=plt.subplots(nrows=1,ncols=n_models,figsize=figsize)
+    else:
+        fig1 = plt.gcf()
 
     for i in range(n_models):
         ax1[i].hist(w[i],bins=nbin,\
@@ -276,8 +279,50 @@ def plot_AIC_weights(sr_arr,sd,models,ax1=None,meta=None,figsize=None,
         ax1[i].set_title(models[i])
 
     if savefig:
+        fig1.tight_layout()
         fig_string = batch_analysis_string+'/AIC_comparison{}.png'.format(meta)
 
         plt.savefig(fig_string)
         log.info('Figure stored to {}.'.format(fig_string))
     return w
+
+def compare_AIC_weights(w,dataset_names,analysis_dir_string,model_ind=0,figsize=(12,12),kde_bw=0.05):
+    """
+    This function compares the consistency of AIC weights for a single model across several datasets.
+    For a given gene and model j, the function takes the weight w_j and compares its absolute difference
+    between two datasets. Then, it aggregates the information over all genes and plots the
+    kernel density estimates for a pair of datasets.
+    If the KDE is near zero, inference on the same dataset tends to choose the same model.
+
+    Input:
+    w: AIC weights corresponding to each model, a n_datasets x n_models x n_genes array.
+    dataset_names: dataset name metadata.
+    analysis_dir_string: figure directory location.
+    model_ind: which model to plot weights for.
+    figsize: figure dimensions.
+    kde_bw: kernel density estimate bandwidth.
+    """
+    fs = 12
+    n_datasets = len(dataset_names)
+    fig1,ax1=plt.subplots(nrows=n_datasets,ncols=n_datasets,figsize=figsize)
+    for i in range(n_datasets):
+        for k in range(n_datasets):
+            if i>k:
+                xx = np.linspace(-0.2, 1.2, 2000)
+                
+                kde = stats.gaussian_kde(np.abs(w[i,model_ind,:]-w[k,model_ind,:]),kde_bw=kde_sigma)
+                ax1[i,k].plot(xx, kde(xx),'k')
+            if i==k:
+                ax1[i,k].hist(w[i,model_ind,:],30,facecolor='silver')
+            if i<k:
+                fig1.delaxes(ax1[i,k])
+            ax1[i,k].set_yticks([])
+            if k==0:
+                ax1[i,k].set_ylabel(dataset_names[i],fontsize=fs)
+            if i==(n_datasets-1):
+                ax1[i,k].set_xlabel(dataset_names[k],fontsize=fs)
+    fig1.tight_layout()
+    fig_string = analysis_dir_string+'/AIC_comparison_grid.png'
+
+    plt.savefig(fig_string)
+    log.info('Figure stored to {}.'.format(fig_string))
