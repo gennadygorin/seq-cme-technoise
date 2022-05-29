@@ -280,7 +280,7 @@ def plot_AIC_weights(sr_arr,sd,models,ax1=None,meta=None,figsize=None,
 
     fig1.tight_layout()
     if savefig:
-        fig_string = sr_arr[0].batch_analysis_string+'/AIC_comparison{}.png'.format(meta)
+        fig_string = (sr_arr[0].batch_analysis_string)+('/AIC_comparison{}.png'.format(meta))
 
         plt.savefig(fig_string)
         log.info('Figure stored to {}.'.format(fig_string))
