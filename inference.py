@@ -42,9 +42,9 @@ aesthetics = {'generic_gene_color':'dimgray',\
               'length_fit_face_color':'firebrick',\
               'length_fit_face_alpha':0.5,\
               'length_fit_lw':4,\
-              'linestyle':'-'
-              'init_fit_linestyle':'--',
-              'init_fit_linewidth':1,
+              'linestyle':'-',\
+              'init_fit_linestyle':'--',\
+              'init_fit_linewidth':1,\
               'diffreg_gene_color':'teal'}
 
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
