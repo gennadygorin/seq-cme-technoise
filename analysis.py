@@ -54,7 +54,7 @@ def make_batch_analysis_dir(sr_arr,dir_string):
 
     Input: 
     sr_arr: list of multiple SearchResults objects.
-    dir_string: batch directory 
+    dir_string: batch directory.
     
     Output: 
     sd: a SearchData object.
@@ -485,3 +485,85 @@ def diffreg_fpi(xl,m1,m2,parname,modeltype='id',ax1=None,s1=None,s2=None,nit=10,
         ax1.set_xlabel(parname+' residual',fontsize=fs)
         ax1.set_ylabel('Density',fontsize=fs)
     return gf,out.beta,resid
+
+def compare_gene_distributions(sr_arr,sd_arr,sz = (5,5),figsize = (10,10),\
+               marg='mature',logscale=None,title=True,\
+               genes_to_plot = None):
+    """
+    This function is analogous to the SearchResults method plot_gene_distributions, but it
+    plots the marginal histograms for multiple datasets at a time (2 supported at this time).
+    The intended use case is to identify a set of DR genes of interest, pass them in as 
+    genes_to_plot, and inspect the difference between the distributions.
+
+    By default, dataset 1 is plotted in red and dataset 2 is plotted in blue.
+
+    Input:
+    sr_arr: list of multiple SearchResults objects.
+    sd_arr: list of multiple SearchData objects.
+    sz: subplot dimensions.
+    figsize: figure dimensions.
+    marg: whether to plot 'nascent' or 'mature' marginal.
+    logscale: whether to apply a log-transformation to the PMF for ease of visualization.
+    title: whether to name the gene in the title.
+    genes_to_plot: which genes to plot, either a boolean or integer array.
+    """
+    if logscale is None:
+        if marg=='joint':
+            logscale = True
+        else:
+            logscale = False
+    (nrows,ncols)=sz
+    
+    fig1,ax1=plt.subplots(nrows=nrows,ncols=ncols,figsize=figsize)
+
+    nax = np.prod(sz)
+    if genes_to_plot is None:
+        genes_to_plot = np.arange(nax)
+
+    genes_to_plot = np.asarray(genes_to_plot)
+    if genes_to_plot.dtype == bool:
+        gtp_temp = np.arange(sr_arr[0].n_genes)
+        genes_to_plot = gtp_temp[genes_to_plot]
+
+    number_of_genes_to_plot = len(genes_to_plot)
+    if number_of_genes_to_plot > sr_arr[0].n_genes:
+        number_of_genes_to_plot = sr_arr[0].n_genes
+        genes_to_plot = genes_to_plot[:self.n_genes]
+    if number_of_genes_to_plot>nax: 
+        number_of_genes_to_plot = nax
+        genes_to_plot = genes_to_plot[:nax]
+
+    
+    j_ = 0
+    for i_ in genes_to_plot:
+        axloc = np.unravel_index(j_,sz) if (sz[0]>1 and sz[1]>1) else j_
+        xlim = 1
+        for j in range(len(sr_arr)):
+            lm = [sd_arr[j].M[i_],sd_arr[j].N[i_]]
+            if marg == 'mature':
+                lm[0]=1
+            if marg == 'nascent':
+                lm[1]=1
+            xlim = np.max([max(lm),xlim])
+            samp = None if (sr_arr[j].model.seq_model == 'None') else sr_arr[j].regressor_optimum[i_]
+            Pa = np.squeeze(sr_arr[j].model.eval_model_pss(sr_arr[j].phys_optimum[i_],lm,samp))
+
+            if marg=='joint':
+                log.error('Potentially implement this later...')
+                raise ValueError('Cannot compare two 2D histograms!')
+            else:
+                plot_hist_and_fit(ax1[axloc],sd_arr[j],i_,Pa,marg,
+                                  facealpha=aesthetics['hist_face_alpha_'+str(j+1)],
+                                  facecolor=aesthetics['hist_face_color_'+str(j+1)],
+                                  fitcolor=aesthetics['hist_fit_color_'+str(j+1)])
+        ax1[axloc].set_xlim([0,xlim-10])
+        if logscale:
+            ax1[axloc].set_yscale('log')
+        if title: 
+            ax1[axloc].set_title(sr_arr[0].gene_names[i_],fontdict={'fontsize': 9})
+        
+        ax1[axloc].set_xticks([])
+        ax1[axloc].set_yticks([])
+
+        j_+=1
+    fig1.tight_layout(pad=0.02)

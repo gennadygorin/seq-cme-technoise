@@ -25,6 +25,8 @@ def extract_data(dataset_filepath, transcriptome_filepath, dataset_name,
     dataset_filepath: string giving location of file with count data. Loom, adata, mtx supported.
     transcriptome_filepath: string giving location of file with gene length annotations.
     dataset_name: dataset metadata; name assigned to dataset-specific folder.
+    dataset_string: dataset-specific directory location.
+    dir_string: batch directory location.
     viz: whether to visualize and save an expression vs. gene length figure.
     dataset_attr_names: spliced layer, unspliced layer, gene name, and cell barcode attribute names in adata or loom file.
     padding: the PMF computation procedure uses a grid on (max U + padding[0], max S + padding[1]) for each gene.
