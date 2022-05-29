@@ -68,6 +68,10 @@ def construct_batch(dataset_filepaths, transcriptome_filepath, dataset_names, ba
     Output:
     dir_string: newly created analysis directory.
     dataset_strings: dataset-specific directories.
+
+    Creates:
+    batch directory and dataset subdirectories.
+    genes.csv and gene_list.csv lists in the batch directory.
     """
     log.info('Beginning data preprocessing and filtering.')
     dir_string = batch_location.rstrip('/') + '/' + ('_'.join((creator, datestring, code_ver, meta, str(batch_id))))
@@ -277,6 +281,8 @@ def import_mtx(dir_name):
     Imports mtx files with spliced and unspliced RNA counts via anndata object.
     Note row/column convention is opposite loompy.
     Conventions as in import_raw.
+
+    mtx files typically have *.genes.txt files with gene IDs rather than names. Beware incompatibilities.
     """
     dir_name = dir_name.rstrip('/') 
     ds = ad.read_mtx(dir_name+'/spliced.mtx')

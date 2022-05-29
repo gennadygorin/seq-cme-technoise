@@ -6,15 +6,26 @@ import scipy
 from scipy.fft import irfft2
 from preprocess import *
 
-# import random
-# from scipy.fft import irfft2
-
-
-# import scipy.stats.mstats
-# from scipy.stats import *
-# import numdifftools
 
 class CMEModel:
+    """
+    This class defines the properties of biological and technical noise models.
+
+    Attributes:
+    bio_model: str, type of transcriptional model describing biological variation.
+    seq_model: str, type of sequencing model describing technical variation.
+    available_biomodels: tuple of strings giving available transcriptional model types.
+    available_seqmodels: tuple of strings giving available sequencing model types.
+    fixed_quad_T: time horizon used for integration with Gauss quadature.
+    quad_order: Gauss quadrature order.
+    quad_vec_T: time horizon used for adaptive integration.
+    quad_method: quadrature method to use (fixed_quad or quad_vec).
+
+    We use "sampling," "sequencing," and "technical" parameters interchangeably. 
+    We use "biological" and "transcriptional" parameters interchangeably.
+    When used in the context of CMEModel, a sampling parameter "samp" is gene-specific,
+    and typically corresponds to "regressor" in inference.py.
+    """
     def __init__(self,bio_model,seq_model,quad_method='fixed_quad',fixed_quad_T=10,quad_order=60,quad_vec_T=np.inf):
         self.bio_model = bio_model
         self.available_biomodels = ('Delay','Bursty','Extrinsic','Constitutive','CIR')
@@ -26,12 +37,21 @@ class CMEModel:
         self.set_integration_parameters(fixed_quad_T,quad_order,quad_vec_T,quad_method)
 
     def set_integration_parameters(self,fixed_quad_T,quad_order,quad_vec_T,quad_method):
+        """
+        This method sets the parameters for quadrature.
+        """
         self.fixed_quad_T = fixed_quad_T
         self.quad_order = quad_order
         self.quad_vec_T = quad_vec_T
         self.quad_method = quad_method
 
     def get_log_name_str(self):
+        """
+        This method returns the names of log-parameters for the model instance.
+
+        Output: 
+        Tuple of strings giving TeX-formatted log-parameter names for the current transcriptional model.
+        """
         if self.bio_model == 'Constitutive':
             return (r'$\log_{10} \beta$',r'$\log_{10} \gamma$')
         elif self.bio_model == 'Delay':
@@ -46,6 +66,12 @@ class CMEModel:
             raise ValueError('Please select a biological noise model from {}.'.format(self.available_biomodels))
 
     def get_num_params(self):
+        """
+        This method returns the number of parameters for the model instance.
+
+        Output: 
+        Integer giving the number of parameters.
+        """
         if self.bio_model == 'Constitutive':
             return 2
         else: 
@@ -53,6 +79,20 @@ class CMEModel:
 
 
     def eval_model_pss(self,p,limits,samp=None):
+        """
+        This method returns the PMF of the model over a grid at a set of parameters.
+
+        Input:
+        p: array of log10 biological parameters.
+        limits: list with integer grid size components.
+        samp: array of sampling parameters, if applicable.
+            Null model uses samp=None.
+            Bernoulli model uses probabilities.
+            Poisson model uses log-sampling rates.
+
+        Output: 
+        Pss: steady-state model PMF.
+        """
         u = []
         mx = np.copy(limits)
         mx[-1] = mx[-1]//2 + 1
@@ -61,7 +101,7 @@ class CMEModel:
             u_ = np.exp(-2j*np.pi*l/limits[i])-1
             if self.seq_model == 'Poisson':
                 u_ = np.exp((10**samp[i])*u_)-1
-            elif self.seq_model == 'Bernoulli': #it might be better to have this one in terms of a positive optimizable value
+            elif self.seq_model == 'Bernoulli':
                 u_ *= samp[i]
             elif self.seq_model == 'None':
                 pass
@@ -81,6 +121,16 @@ class CMEModel:
 
 
     def eval_model_pgf(self,p_,g):
+        """
+        This method returns the log-PGF of the model over the complex unit sphere at a set of parameters.
+
+        Input:
+        p_: array of log10 biological parameters.
+        g: complex PGF arguments, adjusted for sampling.
+
+        Output: 
+        gf: generating function value.
+        """
         p = 10**p_
         if self.bio_model == 'Constitutive': #constitutive production
             beta,gamma = p
@@ -122,7 +172,18 @@ class CMEModel:
     
     def cir_intfun(self,x,g,b,beta,gamma):
         """
-        Computes the IG-driven integrand at time x.
+        This method computes the inverse gaussian-driven CME process at time x.
+        It is a helper function for the CIR-like biological model.
+
+        Input:
+        x: time.
+        g: complex PGF arguments, adjusted for sampling.
+        b: burst size-like parameter.
+        beta: splicing rate.
+        gamma: degradation rate.
+
+        Output: 
+        integrand value.
         """
         if np.isclose(beta,gamma): #compute prefactors for the ODE characteristics.
             c_1 = g[0] #nascent
@@ -138,8 +199,21 @@ class CMEModel:
 
     def burst_intfun(self,x,g,b,beta,gamma):
         """
-        Computes the Singh-Bokes integrand at time x.
+        This method computes the compound Poisson process-driven CME process at time x.
+        This solution was reported by Singh/Bokes (2012).
+        It is a helper function for the bursty biological model.
+
+        Input:
+        x: time.
+        g: complex PGF arguments, adjusted for sampling.
+        b: mean burst size.
+        beta: splicing rate.
+        gamma: degradation rate.
+
+        Output: 
+        integrand value.
         """
+
         if np.isclose(beta,gamma): #compute prefactors for the ODE characteristics.
             c_1 = g[0] #nascent
             c_2 = x*beta*g[1]
@@ -151,11 +225,22 @@ class CMEModel:
         U = b * (np.exp(-beta*x)*c_1 + np.exp(-gamma*x)*c_2)
         return U/(1-U)
 
-#rewrite this whole thing so it can use any of the models.
     def get_MoM(self,moments,lb_log,ub_log,samp=None):
         """
-        Initialize parameter search at the method of moments estimates.
-        lower bound and upper bound are harmonized with optimization routine and input as log10.
+        This method returns the method of moments biological parameter estimates 
+        at a particular set of sampling parameters and under the instantiated model.
+
+        Input:
+        moments: moment array, as defined for SearchData object.
+        lb_log: log10 lower bounds on biological parameters.
+        ub_log: log10 upper bounds on biological parameters.
+        samp: array of sampling parameters, if applicable.
+            Null model uses samp=None.
+            Bernoulli model uses probabilities.
+            Poisson model uses log-sampling rates.
+
+        Output: 
+        x0: np array of log10 parameter estimates. 
         """
 
         lb = 10**lb_log
@@ -214,6 +299,23 @@ class CMEModel:
         return x0
 
     def eval_model_noise(self,p,samp=None):
+        """
+        This method reports the fractions of normalized variance attributable to intrinsic,
+        extrinsic, and technical noise under the instantiated model.
+
+        Input:
+        p: array of log10 biological parameters.
+        samp: array of sampling parameters, if applicable.
+            Null model uses samp=None.
+            Bernoulli model uses probabilities.
+            Poisson model uses log-sampling rates.
+
+        Output: 
+        f: array with size 3 x 2. 
+            dim 0: variance fraction (intrinsic, extrinsic, technical)
+            dim 1: species (unspliced, spliced)
+        The null technical noise model has dim 0 of size 2, as it has no technical noise component.
+        """
         p=10**p
         if self.bio_model == 'Constitutive': #constitutive production
             beta,gamma = p

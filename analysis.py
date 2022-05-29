@@ -13,7 +13,7 @@ def load_search_results(full_result_string):
     try:
         with open(full_result_string,'rb') as srfs:
             search_results = pickle.load(srfs)
-        log.debug('Grid scan results loaded from {}.'.format(full_result_string))
+        log.info('Grid scan results loaded from {}.'.format(full_result_string))
         return search_results
     except:
         log.error('Grid scan results could not be loaded from {}.'.format(full_result_string))

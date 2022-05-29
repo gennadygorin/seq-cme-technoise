@@ -190,7 +190,6 @@ class SearchData:
             dim 1: variance fraction (retained, discarded)
             dim 2: species (unspliced, spliced)
         The unspliced and spliced species are analyzed independently.
-
         """
         f = np.zeros((self.n_genes,2,2)) #genes -- bio vs tech -- species
 
