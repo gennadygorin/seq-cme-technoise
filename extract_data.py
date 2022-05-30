@@ -102,7 +102,7 @@ def extract_data(dataset_filepath, transcriptome_filepath, dataset_name,
                         c='firebrick',alpha=0.9)
         dataset_diagnostics_dir_string = dataset_string + '/diagnostic_figures'
         make_dir(dataset_diagnostics_dir_string)
-        plt.savefig(dataset_diagnostics_dir_string+'/{}.png'.format(dataset_name))
+        plt.savefig(dataset_diagnostics_dir_string+'/{}.png'.format(dataset_name),dpi=450)
 
     n_genes = len(gene_names)
     M = np.asarray([np.amax(U[gene_index]) for gene_index in range(n_genes)],dtype=int)+padding[0]

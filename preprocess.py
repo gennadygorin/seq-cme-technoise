@@ -15,7 +15,7 @@ import warnings
 
 
 
-code_ver_global='021'
+code_ver_global='022'
 
 ########################
 ## Debug and error logging
@@ -153,7 +153,7 @@ def construct_batch(dataset_filepaths, transcriptome_filepath, dataset_names, ba
         make_dir(diagnostics_dir_string)
         for figure_ind in plt.get_fignums():
             plt.figure(figure_ind)
-            plt.savefig(diagnostics_dir_string+'/{}.png'.format(dataset_names[figure_ind-1]))
+            plt.savefig(diagnostics_dir_string+'/{}.png'.format(dataset_names[figure_ind-1]),dpi=450)
     return dir_string,dataset_strings
 
 ########################
