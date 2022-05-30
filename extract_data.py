@@ -174,7 +174,7 @@ class SearchData:
         for j in range(len(input_data)):
             setattr(self,attr_names[j],input_data[j])
 
-    def get_noise_decomp(self,sizefactor = 'pf',pf_after_log=True,lognormalize=True):
+    def get_noise_decomp(self,sizefactor = 'pf',pf_after_log=True,lognormalize=True,pcount=1e-3):
         """
         This method performs normalization and variance stabilization on the raw data, and
         reports the fractions of normalized variance retained and removed as a result of the process.
@@ -185,6 +185,7 @@ class SearchData:
             a number: use this number (e.g., 1e4 for cp10k).
         pf_after_log: whether to a round of proportional fitting as the last step.
         lognormalize: whether to do log(1+x).
+        pcount: pseudocount added to ensure division by zero does not occur.
 
         Output: 
         f: array with size n_genes x 2 x 2. 
@@ -194,18 +195,18 @@ class SearchData:
         The unspliced and spliced species are analyzed independently.
         """
         f = np.zeros((self.n_genes,2,2)) #genes -- bio vs tech -- species
-
+        
         CV2 = self.S.var(1)/self.S.mean(1)**2
 
         if sizefactor == 'pf':
             C = self.S.sum(0).mean()
         else:
             C = sizefactor
-        S_ = self.S/(self.S.sum(0)[None,:])*C
+        S_ = self.S/(self.S.sum(0)[None,:]+pcount)*C
         if lognormalize:
             S_ = np.log(1+S_)
         if pf_after_log:
-            S_ = S_/(S_.sum(0)[None,:])*(S_.sum(0).mean())
+            S_ = S_/(S_.sum(0)[None,:]+pcount)*(S_.sum(0).mean())
         CV2_ = S_.var(1)/S_.mean(1)**2
         
         f[:,0,1] = CV2_/CV2

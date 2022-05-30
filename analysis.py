@@ -297,7 +297,7 @@ def compute_diffreg(sr1,sr2,modeltype='id',gene_filter_ = None,
                      discard_rejected = True,
                      use_sigma=True,
                      figsize=None,
-                     meta = '12',viz=True):
+                     meta = '12',viz=True,pval=0.001):
     """
     This function uses the optimal physical and sampling parameters obtained for a pair of datasets
     to attempt to identify sources of differential regulation (DR) under a model of transcription.
@@ -318,6 +318,7 @@ def compute_diffreg(sr1,sr2,modeltype='id',gene_filter_ = None,
     figsize: figure dimensions.
     meta: figure name metadata.
     viz: whether to plot the histograms of residuals.
+    pval: p-value threshold to use for the Z-test.
 
     Output:
     gn: list of size n_phys_pars; each entry contains names of genes identified as DR.
@@ -359,10 +360,10 @@ def compute_diffreg(sr1,sr2,modeltype='id',gene_filter_ = None,
         # xl = [sr1.sp.phys_lb[i],sr1.sp.phys_ub[i]]
         if use_sigma:
             gf_,offs_,resid_ = diffreg_fpi(sr1.phys_optimum[gene_filter,i],sr2.phys_optimum[gene_filter,i],parnames[i],\
-                             modeltype=modeltype,ax1=ax,s1=sr1.sigma[gene_filter,i],s2=sr2.sigma[gene_filter,i],nit=10,viz=viz)
+                             modeltype=modeltype,ax1=ax,s1=sr1.sigma[gene_filter,i],s2=sr2.sigma[gene_filter,i],nit=10,viz=viz,pval=pval)
         else:
             gf_,offs_,resid_ = diffreg_fpi(sr1.phys_optimum[gene_filter,i],sr2.phys_optimum[gene_filter,i],parnames[i],\
-                             modeltype=modeltype,ax1=ax,s1=None,s2=None,nit=10,viz=viz)
+                             modeltype=modeltype,ax1=ax,s1=None,s2=None,nit=10,viz=viz,pval=pval)
         resid_arr[gene_filter] = resid_
 
         filtind = np.arange(sr1.n_genes)
@@ -404,7 +405,7 @@ def linoffset(B, x, modeltype='id'):
     elif modeltype=='lin':
         return B[1]*x + B[0]
 
-def diffreg_fpi(m1,m2,parname,modeltype='id',ax1=None,s1=None,s2=None,nit=10,pval = 0.005,viz=True):
+def diffreg_fpi(m1,m2,parname,modeltype='id',ax1=None,s1=None,s2=None,nit=10,pval = 0.001,viz=True):
     """
     This function uses the optimal physical and sampling parameters obtained for a pair of datasets
     to attempt to identify differentially regulated (DR) genes under a model of transcription, for a single parameter.
@@ -570,7 +571,7 @@ def compare_gene_distributions(sr_arr,sd_arr,sz = (5,5),figsize = (10,10),\
     fig1.tight_layout(pad=0.02)
 
 
-def compute_diffexp(sd1,sd2,logscale=True,pval=0.005,method='ttest',bonferroni=True,modeltype='lin',viz=True):
+def compute_diffexp(sd1,sd2,logscale=True,pval=0.001,method='ttest',bonferroni=True,modeltype='lin',viz=True):
     """
     This function attempts to identify differentially expressed (DE) genes using a simple comparison of 
     the meand of gene-specific count distributions.
