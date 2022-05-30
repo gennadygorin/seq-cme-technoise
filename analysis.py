@@ -356,12 +356,12 @@ def compute_diffreg(sr1,sr2,modeltype='id',gene_filter_ = None,
         
         resid_arr = np.asarray([np.nan]*sr1.n_genes)
         
-        xl = [sr1.sp.phys_lb[i],sr1.sp.phys_ub[i]]
+        # xl = [sr1.sp.phys_lb[i],sr1.sp.phys_ub[i]]
         if use_sigma:
-            gf_,offs_,resid_ = diffreg_fpi(xl,sr1.phys_optimum[gene_filter,i],sr2.phys_optimum[gene_filter,i],parnames[i],\
+            gf_,offs_,resid_ = diffreg_fpi(sr1.phys_optimum[gene_filter,i],sr2.phys_optimum[gene_filter,i],parnames[i],\
                              modeltype=modeltype,ax1=ax,s1=sr1.sigma[gene_filter,i],s2=sr2.sigma[gene_filter,i],nit=10,viz=viz)
         else:
-            gf_,offs_,resid_ = diffreg_fpi(xl,sr1.phys_optimum[gene_filter,i],sr2.phys_optimum[gene_filter,i],parnames[i],\
+            gf_,offs_,resid_ = diffreg_fpi(sr1.phys_optimum[gene_filter,i],sr2.phys_optimum[gene_filter,i],parnames[i],\
                              modeltype=modeltype,ax1=ax,s1=None,s2=None,nit=10,viz=viz)
         resid_arr[gene_filter] = resid_
 
@@ -404,7 +404,7 @@ def linoffset(B, x, modeltype='id'):
     elif modeltype=='lin':
         return B[1]*x + B[0]
 
-def diffreg_fpi(xl,m1,m2,parname,modeltype='id',ax1=None,s1=None,s2=None,nit=10,pval = 0.005,viz=True):
+def diffreg_fpi(m1,m2,parname,modeltype='id',ax1=None,s1=None,s2=None,nit=10,pval = 0.005,viz=True):
     """
     This function uses the optimal physical and sampling parameters obtained for a pair of datasets
     to attempt to identify differentially regulated (DR) genes under a model of transcription, for a single parameter.
@@ -412,7 +412,6 @@ def diffreg_fpi(xl,m1,m2,parname,modeltype='id',ax1=None,s1=None,s2=None,nit=10,
     Gaussian aleatory variation from a set with systematic, high-magnitude deviations between the datasets.
 
     Input:
-    xl: lower and upper bounds on parameter values.
     m1: parameter estimates from SearchResult instance 1.
     m2: parameter estimates from SearchResult instance 2.
         at this point, the sizes of m1 and m2 might be smaller than n_genes, because some genes may have been filtered out.
@@ -433,7 +432,7 @@ def diffreg_fpi(xl,m1,m2,parname,modeltype='id',ax1=None,s1=None,s2=None,nit=10,
     """
     fs=12
     gf = np.ones(len(m1),dtype=bool)
-    x = np.linspace(xl[0], xl[1], 100)
+    # x = np.linspace(xl[0], xl[1], 100)
     fitlaw = scipy.stats.norm
     
     if modeltype == 'id':
@@ -461,6 +460,7 @@ def diffreg_fpi(xl,m1,m2,parname,modeltype='id',ax1=None,s1=None,s2=None,nit=10,
 
         
         fitparams = fitlaw.fit(resid[gf])
+        x = np.linspace(resid.min(),resid.max(),100)
         p = fitlaw.pdf(x, *fitparams)
         if j==0 and viz:
             ax1.plot(x, p, linestyle=aesthetics['init_fit_linestyle'], \
