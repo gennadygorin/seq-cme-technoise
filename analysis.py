@@ -568,3 +568,51 @@ def compare_gene_distributions(sr_arr,sd_arr,sz = (5,5),figsize = (10,10),\
 
         j_+=1
     fig1.tight_layout(pad=0.02)
+
+
+def compute_diffexp(sd1,sd2,logscale=True,pval=0.005,method='ttest',bonferroni=True,modeltype='lin',viz=True):
+    """
+    This function attempts to identify differentially expressed (DE) genes using a simple comparison of 
+    the meand of gene-specific count distributions.
+
+    Input:
+    sd1: SearchData instance 1.
+    sd2: SearchData instance 2.
+    logscale: whether to use a log-transformation for the t-test.
+    pval: p-value threshold for proposing that a gene is DE.
+    method: the DE identification method to use.
+        If 'ttest', use scipy.stats.ttest_ind, Welch’s t-test.
+        If 'logmeanfpi', use the fixed-point iteration procedure on the distribution of log-means.
+        If 'meanlogfpi', use the FPI procedure on the distribution of means of log+1 counts.
+    bonferroni: whether to use a multiple comparison correction for the ttest method.
+    modeltype: statistical model for variation between means, as in diffreg_fpi.
+    viz: whether to visualize the results for non-'ttest' methods.
+    """
+    s1 = sd1.S
+    s2 = sd2.S
+    
+    if method=='ttest':
+        gf = np.zeros(sd1.n_genes,dtype=bool)
+        if bonferroni:
+            pval /= sd1.n_genes
+        if logscale:
+            s1 = np.log(s1+1)
+            s2 = np.log(s2+1)
+        for i in range(sd1.n_genes):
+            s,p = scipy.stats.ttest_ind(s1[i],s2[i],equal_var=False)
+            if p<pval:
+                gf[i] = True
+    else:
+        if method=='logmeanfpi':
+            m1 = np.log(s1.mean(1))
+            m2 = np.log(s2.mean(1))
+        elif method == 'meanlogfpi':
+            m1 = np.log(s1+1).mean(1)
+            m2 = np.log(s2+1).mean(1)
+        if viz:
+            fig1,ax1 = plt.subplots(1,1)
+        else:
+            ax1=None
+        gf,offs_,resid_ = diffreg_fpi(m1,m2,'Spliced mean',\
+                         modeltype=modeltype,ax1=ax1,s1=None,s2=None,nit=30,viz=viz,pval=pval)
+    return gf
