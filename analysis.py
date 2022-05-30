@@ -367,7 +367,7 @@ def compute_diffreg(sr1,sr2,modeltype='id',gene_filter_ = None,
 
         filtind = np.arange(sr1.n_genes)
         filtind = filtind[gene_filter]
-        filtind = filtind[~gf_]
+        filtind = filtind[gf_]
         gf__ = np.zeros(sr1.n_genes,dtype=bool)
         gf__[filtind] = True
         gn_ = sr1.gene_names[gf__]
@@ -484,6 +484,7 @@ def diffreg_fpi(m1,m2,parname,modeltype='id',ax1=None,s1=None,s2=None,nit=10,pva
     if viz:
         ax1.set_xlabel(parname+' residual',fontsize=fs)
         ax1.set_ylabel('Density',fontsize=fs)
+    gf = np.logical_not(gf)
     return gf,out.beta,resid
 
 def compare_gene_distributions(sr_arr,sd_arr,sz = (5,5),figsize = (10,10),\
