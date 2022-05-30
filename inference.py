@@ -748,7 +748,7 @@ class SearchResults:
 
 
 
-    def par_fun_hess(self,gene_index):
+    def par_fun_hess(self,sd,gene_index):
         """
         This is a helper method for the parallelization procedure.
         """
@@ -768,6 +768,7 @@ class SearchResults:
 
         Input:
         search_data: a SearchData instance.
+        num_cores: number of cores to use for parallelization over genes.
 
         This is a high-value target for parallelization.
         """
@@ -777,7 +778,7 @@ class SearchResults:
         if num_cores>1:
             log.info('Starting parallelized Hessian computation.')
             pool=multiprocessing.Pool(processes=num_cores)
-            hess = pool.map(self.par_fun_hess,range(self.n_genes))
+            hess = pool.map(self.par_fun_hess,zip(range(self.n_genes),[search_data]*self.n_genes))
             pool.close()
             pool.join()
             log.info('Parallelized Hessian computation complete.')
