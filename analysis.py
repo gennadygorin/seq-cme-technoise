@@ -557,7 +557,7 @@ def compare_gene_distributions(sr_arr,sd_arr,sz = (5,5),figsize = (10,10),\
                                   facealpha=aesthetics['hist_face_alpha_'+str(j+1)],
                                   facecolor=aesthetics['hist_face_color_'+str(j+1)],
                                   fitcolor=aesthetics['hist_fit_color_'+str(j+1)])
-        ax1[axloc].set_xlim([0,xlim-10])
+        ax1[axloc].set_xlim([-0.5,xlim-10])
         if logscale:
             ax1[axloc].set_yscale('log')
         if title: 
