@@ -746,7 +746,20 @@ class SearchResults:
             np.sum(self.rejected_genes),self.n_genes,t2-t1))
         return (csq,pval)
 
-    def compute_sigma(self,search_data):
+
+
+    def par_fun_hess(self,gene_index):
+        """
+        This is a helper method for the parallelization procedure.
+        """
+        samp = None if (self.model.seq_model == 'None') else self.regressor_optimum[gene_index]
+        lm = [search_data.M[gene_index],search_data.N[gene_index]]  
+        Hfun = numdifftools.Hessian(lambda x: kl_div(
+            search_data.hist[gene_index], self.model.eval_model_pss(x, lm, samp)))
+        hess= Hfun(self.phys_optimum[gene_index])
+        return hess
+
+    def compute_sigma(self,search_data,num_cores=1):
         """
         This method computes estimates for the uncertainty in the biological parameter values
         inferred by the search procedure. 
@@ -761,14 +774,24 @@ class SearchResults:
         log.info('Computing local Hessian.')
         t1 = time.time()
 
-        # n_phys_pars = len(self.sp.phys_lb)
-        hess = np.zeros((self.n_genes,self.sp.n_phys_pars,self.sp.n_phys_pars))
-        for gene_index in range(self.n_genes):
-            samp = None if (self.model.seq_model == 'None') else self.regressor_optimum[gene_index]
-            lm = [search_data.M[gene_index],search_data.N[gene_index]]  
-            Hfun = numdifftools.Hessian(lambda x: kl_div(
-                search_data.hist[gene_index], self.model.eval_model_pss(x, lm, samp)))
-            hess[gene_index,:,:] = Hfun(self.phys_optimum[gene_index])
+        if num_cores>1:
+            log.info('Starting parallelized Hessian computation.')
+            pool=multiprocessing.Pool(processes=num_cores)
+            hess = pool.map(self.par_fun_hess,range(self.n_genes))
+            pool.close()
+            pool.join()
+            log.info('Parallelized Hessian computation complete.')
+            hess = np.asarray(hess)
+        else:
+            log.info('Starting non-parallelized Hessian computation.')
+            hess = np.zeros((self.n_genes,self.sp.n_phys_pars,self.sp.n_phys_pars))
+            for gene_index in range(self.n_genes):
+                Hfun = numdifftools.Hessian(lambda x: kl_div(
+                    search_data.hist[gene_index], self.model.eval_model_pss(x, lm, samp)))
+                hess[gene_index,:,:] = Hfun(self.phys_optimum[gene_index])
+            log.info('Non-parallelized Hessian computation complete.')
+
+
         fail = np.zeros(self.n_genes,dtype=bool)
         sigma = np.zeros((self.n_genes,self.sp.n_phys_pars))
 
