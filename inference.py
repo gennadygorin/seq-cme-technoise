@@ -880,7 +880,7 @@ class SearchResults:
 
             if viz:
                 axloc = np.unravel_index(i_,szfig) if (szfig[0]>1 and szfig[1]>1) else i_
-                self.plot_landscape(ax1[axloc], gene_filter = gene_filter, levels=30,hideticks=True)
+                self.plot_landscape(ax1[axloc], discard_rejected=True, levels=30,hideticks=True)
         if viz:
             fig_string = self.analysis_figure_string+'/chisquare_stability.png'
             plt.savefig(fig_string)
