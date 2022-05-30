@@ -748,10 +748,11 @@ class SearchResults:
 
 
 
-    def par_fun_hess(self,sd,gene_index):
+    def par_fun_hess(self,inputs):
         """
         This is a helper method for the parallelization procedure.
         """
+        gene_index,search_data = inputs
         samp = None if (self.model.seq_model == 'None') else self.regressor_optimum[gene_index]
         lm = [search_data.M[gene_index],search_data.N[gene_index]]  
         Hfun = numdifftools.Hessian(lambda x: kl_div(
