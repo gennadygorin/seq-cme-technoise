@@ -200,10 +200,12 @@ class SearchData:
             if viz:
                 ax1.plot([0,self.n_cells+1],thr*np.ones(2),'r--')
                 ax1.plot(rank_*np.ones(2),[umi_sum.min(),umi_sum.max()],'r--')
+            return cf
         if viz:
             ax1.set_xlabel('Cell rank')
             ax1.set_ylabel('UMI count+1')
             ax1.set_yscale('log')
+        return None
 
     def get_noise_decomp(self,sizefactor = 'pf',lognormalize=True,pcount=0,knee_thr=None):
         """
