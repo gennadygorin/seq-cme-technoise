@@ -174,7 +174,38 @@ class SearchData:
         for j in range(len(input_data)):
             setattr(self,attr_names[j],input_data[j])
 
-    def get_noise_decomp(self,sizefactor = 'pf',pf_after_log=True,lognormalize=True,pcount=1e-3):
+    def knee_plot(self,ax1=None,thr=None,viz=False):
+        """
+        This method plots the knee plot for the spliced mRNA counts and filters for cells that have
+        more UMIs than the threshold.
+
+        Input:
+        ax1: matplotlib axes to plot into.
+        thr: UMI threshold.
+        viz: whether to visualize.
+
+        Output:
+        cf: cell filter for cells to be retained.
+        """
+        umi_sum = sd.S.sum(0)
+        umi_rank = np.argsort(umi_sum)
+        if ax1 is None and viz:
+            fig1,ax1 = plt.subplots(1,1,figsize=(7,5))
+        usf = np.flip(umi_sum[umi_rank])
+        if viz:
+            ax1.plot(np.arange(sd.n_cells),usf,'k')
+        if thr is not None:
+            cf = umi_sum>thr
+            rank_ = np.argmin(np.abs(usf-thr))
+            if viz:
+                ax1.plot([0,sd.n_cells+1],thr*np.ones(2),'r--')
+                ax1.plot(rank_*np.ones(2),[umi_sum.min(),umi_sum.max()],'r--')
+        if viz:
+            ax1.set_xlabel('Cell rank')
+            ax1.set_ylabel('UMI count+1')
+            ax1.set_yscale('log')
+
+    def get_noise_decomp(self,sizefactor = 'pf',lognormalize=True,pcount=0,knee_thr=None):
         """
         This method performs normalization and variance stabilization on the raw data, and
         reports the fractions of normalized variance retained and removed as a result of the process.
@@ -183,7 +214,6 @@ class SearchData:
         sizefactor: what size factor to use. 
             'pf': Proportional fitting; set the size of each cell to the mean size.
             a number: use this number (e.g., 1e4 for cp10k).
-        pf_after_log: whether to a round of proportional fitting as the last step.
         lognormalize: whether to do log(1+x).
         pcount: pseudocount added to ensure division by zero does not occur.
 
@@ -195,34 +225,38 @@ class SearchData:
         The unspliced and spliced species are analyzed independently.
         """
         f = np.zeros((self.n_genes,2,2)) #genes -- bio vs tech -- species
+
+        S = np.copy(self.S)
+        U = np.copy(self.U)
+
+        if knee_thr is not None:
+            cf = self.knee_plot(thr=knee_thr)
+            S = S[:,cf]
+            U = U[:,cf]
         
-        CV2 = self.S.var(1)/self.S.mean(1)**2
+        CV2 = S.var(1)/S.mean(1)**2
 
         if sizefactor == 'pf':
-            C = self.S.sum(0).mean()
+            C = S.sum(0).mean()
         else:
             C = sizefactor
-        S_ = self.S/(self.S.sum(0)[None,:]+pcount)*C
+        S_ = S/(S.sum(0)[None,:]+pcount)*C
         if lognormalize:
             S_ = np.log(1+S_)
-        if pf_after_log:
-            S_ = S_/(S_.sum(0)[None,:]+pcount)*(S_.sum(0).mean())
         CV2_ = S_.var(1)/S_.mean(1)**2
         
         f[:,0,1] = CV2_/CV2
         f[:,1,1] = 1-f[:,0,1]
 
-        CV2 = self.U.var(1)/self.U.mean(1)**2
+        CV2 = U.var(1)/U.mean(1)**2
         
         if sizefactor == 'pf':
-            C = self.U.sum(0).mean()
+            C = U.sum(0).mean()
         else:
             C = sizefactor
-        U_ = self.U/(self.U.sum(0)[None,:])*C
+        U_ = U/(U.sum(0)[None,:]+pcount)*C
         if lognormalize:
             U_ = np.log(1+U_)
-        if pf_after_log:
-            U_ = U_/(U_.sum(0)[None,:])*U_.sum(0).mean()
         CV2_ = U_.var(1)/U_.mean(1)**2
 
         f[:,0,0] = CV2_/CV2
