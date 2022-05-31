@@ -585,7 +585,7 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
         a number: use this number (e.g., 1e4 for cp10k).
         None: do not do size/depth normalization.
     lognormalize: whether to use a log-transformation for the t-test.
-        pcount: pseudocount added to ensure division by zero does not occur.
+    pcount: pseudocount added to ensure division by zero does not occur.
     pval: p-value threshold for proposing that a gene is DE.
     method: the DE identification method to use.
         If 'ttest', use scipy.stats.ttest_ind, Welch’s t-test.
