@@ -571,7 +571,7 @@ def compare_gene_distributions(sr_arr,sd_arr,sz = (5,5),figsize = (10,10),\
     fig1.tight_layout(pad=0.02)
 
 
-def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,
+def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
                     pval=0.001,method='ttest',bonferroni=True,modeltype='lin',viz=True,knee_thr=None):
     """
     This function attempts to identify differentially expressed (DE) genes using a simple comparison of 
@@ -585,6 +585,7 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,
         a number: use this number (e.g., 1e4 for cp10k).
         None: do not do size/depth normalization.
     lognormalize: whether to use a log-transformation for the t-test.
+        pcount: pseudocount added to ensure division by zero does not occur.
     pval: p-value threshold for proposing that a gene is DE.
     method: the DE identification method to use.
         If 'ttest', use scipy.stats.ttest_ind, Welch’s t-test.
