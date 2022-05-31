@@ -214,8 +214,10 @@ class SearchData:
         sizefactor: what size factor to use. 
             'pf': Proportional fitting; set the size of each cell to the mean size.
             a number: use this number (e.g., 1e4 for cp10k).
+            None: do not do size/depth normalization.
         lognormalize: whether to do log(1+x).
         pcount: pseudocount added to ensure division by zero does not occur.
+        knee_thr: knee plot UMI threshold used to filter out low-expression cells.
 
         Output: 
         f: array with size n_genes x 2 x 2. 
@@ -234,32 +236,28 @@ class SearchData:
             S = S[:,cf]
             U = U[:,cf]
         
-        CV2 = S.var(1)/S.mean(1)**2
+        CV2_1 = S.var(1)/S.mean(1)**2
+        CV2_2 = U.var(1)/U.mean(1)**2
 
-        if sizefactor == 'pf':
-            C = S.sum(0).mean()
-        else:
-            C = sizefactor
-        S_ = S/(S.sum(0)[None,:]+pcount)*C
+        if sizefactor is not None:
+            if sizefactor == 'pf':
+                c1 = S.sum(0).mean()
+                c2 = U.sum(0).mean()
+            else:
+                c1 = sizefactor
+                c2 = sizefactor
+            S = S/(S.sum(0)[None,:]+pcount)*c1
+            U = U/(U.sum(0)[None,:]+pcount)*c2
         if lognormalize:
-            S_ = np.log(1+S_)
-        CV2_ = S_.var(1)/S_.mean(1)**2
-        
-        f[:,0,1] = CV2_/CV2
-        f[:,1,1] = 1-f[:,0,1]
+            S = np.log(1+S)
+            U = np.log(1+U)
+        CV2_1_ = S.var(1)/S.mean(1)**2
+        CV2_2_ = U.var(1)/U.mean(1)**2    
 
-        CV2 = U.var(1)/U.mean(1)**2
-        
-        if sizefactor == 'pf':
-            C = U.sum(0).mean()
-        else:
-            C = sizefactor
-        U_ = U/(U.sum(0)[None,:]+pcount)*C
-        if lognormalize:
-            U_ = np.log(1+U_)
-        CV2_ = U_.var(1)/U_.mean(1)**2
-
-        f[:,0,0] = CV2_/CV2
+        #compute fraction of CV2 eliminated for unspliced and spliced
+        f[:,0,0] = CV2_2_/CV2_2
         f[:,1,0] = 1-f[:,0,0]
         
+        f[:,0,1] = CV2_1_/CV2_1
+        f[:,1,1] = 1-f[:,0,1]
         return f
