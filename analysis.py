@@ -603,8 +603,8 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,
         if knee_thr is not None:
             cf1 = sd1.knee_plot(thr=knee_thr[0])
             cf2 = sd2.knee_plot(thr=knee_thr[1])
-            s1 = s1[:,cf]
-            s2 = s2[:,cf]
+            s1 = s1[:,cf1]
+            s2 = s2[:,cf2]
 
         gf = np.zeros(sd1.n_genes,dtype=bool)
         if bonferroni:
@@ -618,7 +618,6 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,
                 c2 = sizefactor
             s1 = s1/(s1.sum(0)[None,:]+pcount)*c1
             s2 = s2/(s2.sum(0)[None,:]+pcount)*c2
-
         if lognormalize:
             s1 = np.log(s1+1)
             s2 = np.log(s2+1)
