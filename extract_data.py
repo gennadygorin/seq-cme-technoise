@@ -187,18 +187,18 @@ class SearchData:
         Output:
         cf: cell filter for cells to be retained.
         """
-        umi_sum = sd.S.sum(0)
+        umi_sum = self.S.sum(0)
         umi_rank = np.argsort(umi_sum)
         if ax1 is None and viz:
             fig1,ax1 = plt.subplots(1,1,figsize=(7,5))
         usf = np.flip(umi_sum[umi_rank])
         if viz:
-            ax1.plot(np.arange(sd.n_cells),usf,'k')
+            ax1.plot(np.arange(self.n_cells),usf,'k')
         if thr is not None:
             cf = umi_sum>thr
             rank_ = np.argmin(np.abs(usf-thr))
             if viz:
-                ax1.plot([0,sd.n_cells+1],thr*np.ones(2),'r--')
+                ax1.plot([0,self.n_cells+1],thr*np.ones(2),'r--')
                 ax1.plot(rank_*np.ones(2),[umi_sum.min(),umi_sum.max()],'r--')
         if viz:
             ax1.set_xlabel('Cell rank')
