@@ -603,7 +603,7 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
     s1 = np.copy(sd1.S)
     s2 = np.copy(sd2.S)
 
-    if viz and ax1 is None:
+    if (viz or viz_resid) and ax1 is None:
         fig1,ax1 = plt.subplots(1,1)
     else:
         ax1=None
@@ -644,7 +644,7 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
             ax1.scatter(fc[gf],pv[gf],5,'r')
             ax1.scatter(fc[~gf],pv[~gf],3,'darkgray')
             ax1.set_xlabel(r'Fold change ($\log_2$)')
-            ax1.set_xlabel(r'$-\log_{10} p$')
+            ax1.set_ylabel(r'$-\log_{10} p$')
     else:
         if method=='logmeanfpi':
             m1 = np.log2(s1.mean(1))
@@ -660,5 +660,5 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
             ax1.scatter(fc[gf],pv[gf],5,'r')
             ax1.scatter(fc[~gf],pv[~gf],3,'darkgray')
             ax1.set_xlabel(r'Fold change ($\log_2$)')
-            ax1.set_xlabel(r'$-\log_{10} p$')
+            ax1.set_ylabel(r'$-\log_{10} p$')
     return gf,fc
