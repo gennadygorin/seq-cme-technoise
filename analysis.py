@@ -617,7 +617,7 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
 
         gf = np.zeros(sd1.n_genes,dtype=bool)
         if bonferroni:
-            pval /= sd1.n_genes
+            pval_thr /= sd1.n_genes
         if sizefactor is not None:
             if sizefactor == 'pf':
                 c1 = s1.sum(0).mean()
@@ -633,7 +633,7 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
         p = np.zeros(sd1.n_genes)
         for i in range(sd1.n_genes):
             _,p_ = scipy.stats.ttest_ind(s1[i],s2[i],equal_var=False)
-            if p_<pval:
+            if p_<pval_thr:
                 gf[i] = True
             p[i] = p_
         fc = s2.mean(1) - s1.mean(1)
