@@ -575,7 +575,7 @@ def compare_gene_distributions(sr_arr,sd_arr,sz = (5,5),figsize = (10,10),\
 
 def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
                     pval_thr=0.001,method='ttest',bonferroni=True,modeltype='lin',viz=True,knee_thr=None,
-                    fc_thr = 2,ax1=None,viz_resid=False):
+                    fc_thr = 1,ax1=None,viz_resid=False):
     """
     This function attempts to identify differentially expressed (DE) genes using a simple comparison of 
     the meand of gene-specific count distributions.
@@ -605,8 +605,7 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
 
     if (viz or viz_resid) and ax1 is None:
         fig1,ax1 = plt.subplots(1,1)
-    else:
-        ax1=None
+        
     if method=='ttest':
 
         if knee_thr is not None:
