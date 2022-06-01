@@ -572,7 +572,8 @@ def compare_gene_distributions(sr_arr,sd_arr,sz = (5,5),figsize = (10,10),\
 
 
 def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
-                    pval=0.001,method='ttest',bonferroni=True,modeltype='lin',viz=True,knee_thr=None):
+                    pval=0.001,method='ttest',bonferroni=True,modeltype='lin',viz=True,knee_thr=None,
+                    fc_thr = 2):
     """
     This function attempts to identify differentially expressed (DE) genes using a simple comparison of 
     the meand of gene-specific count distributions.
@@ -584,7 +585,7 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
         'pf': Proportional fitting; set the size of each cell to the mean size.
         a number: use this number (e.g., 1e4 for cp10k).
         None: do not do size/depth normalization.
-    lognormalize: whether to use a log-transformation for the t-test.
+    lognormalize: whether to use a log2-transformation for the t-test.
     pcount: pseudocount added to ensure division by zero does not occur.
     pval: p-value threshold for proposing that a gene is DE.
     method: the DE identification method to use.
@@ -595,10 +596,15 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
     modeltype: statistical model for variation between means, as in diffreg_fpi.
     viz: whether to visualize the results for non-'ttest' methods.
     knee_thr: knee plot UMI threshold used to filter out low-expression cells.
+    fc_thr: fold change threshold for t-test.
     """
     s1 = np.copy(sd1.S)
     s2 = np.copy(sd2.S)
-    
+
+    if viz:
+        fig1,ax1 = plt.subplots(1,1)
+    else:
+        ax1=None
     if method=='ttest':
 
         if knee_thr is not None:
@@ -620,23 +626,33 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
             s1 = s1/(s1.sum(0)[None,:]+pcount)*c1
             s2 = s2/(s2.sum(0)[None,:]+pcount)*c2
         if lognormalize:
-            s1 = np.log(s1+1)
-            s2 = np.log(s2+1)
+            s1 = np.log2(s1+1)
+            s2 = np.log2(s2+1)
         for i in range(sd1.n_genes):
-            s,p = scipy.stats.ttest_ind(s1[i],s2[i],equal_var=False)
+            _,p = scipy.stats.ttest_ind(s1[i],s2[i],equal_var=False)
             if p<pval:
                 gf[i] = True
+        fc = s2.mean(1) - s1.mean(1)
+        gf = gf & (np.abs(fc)>fc_thr)
+        if viz: 
+            pv = -np.log10(p)
+            ax1.scatter(fc[gf],pv[gf],5,'r')
+            ax1.scatter(fc[~gf],pv[~gf],3,'darkgray')
+            ax1.set_xlabel(r'Fold change ($\log_2$)')
+            ax1.set_xlabel(r'$-\log_{10} p$')
     else:
         if method=='logmeanfpi':
-            m1 = np.log(s1.mean(1))
-            m2 = np.log(s2.mean(1))
+            m1 = np.log2(s1.mean(1))
+            m2 = np.log2(s2.mean(1))
         elif method == 'meanlogfpi':
-            m1 = np.log(s1+1).mean(1)
-            m2 = np.log(s2+1).mean(1)
-        if viz:
-            fig1,ax1 = plt.subplots(1,1)
-        else:
-            ax1=None
+            m1 = np.log2(s1+1).mean(1)
+            m2 = np.log2(s2+1).mean(1)
         gf,offs_,resid_ = diffreg_fpi(m1,m2,'Spliced mean',\
                          modeltype=modeltype,ax1=ax1,s1=None,s2=None,nit=30,viz=viz,pval=pval)
-    return gf
+        gf = m2-m1
+        if viz: 
+            pv = -np.log10(p)
+            ax1.scatter(fc[gf],pv[gf],5,'r')
+            ax1.scatter(fc[~gf],pv[~gf],3,'darkgray')
+
+    return gf,fc
