@@ -630,12 +630,15 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
         if lognormalize:
             s1 = np.log2(s1+1)
             s2 = np.log2(s2+1)
+        p = np.zeros(sd1.n_genes)
         for i in range(sd1.n_genes):
-            _,p = scipy.stats.ttest_ind(s1[i],s2[i],equal_var=False)
-            if p<pval_thr:
+            _,p_ = scipy.stats.ttest_ind(s1[i],s2[i],equal_var=False)
+            if p_<pval:
                 gf[i] = True
+            p[i] = p_
         fc = s2.mean(1) - s1.mean(1)
         gf = gf & (np.abs(fc)>fc_thr)
+
         if viz: 
             pv = -np.log10(p)
             ax1.scatter(fc[gf],pv[gf],5,'r')
