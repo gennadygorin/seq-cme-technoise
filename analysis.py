@@ -359,10 +359,10 @@ def compute_diffreg(sr1,sr2,modeltype='id',gene_filter_ = None,
         
         # xl = [sr1.sp.phys_lb[i],sr1.sp.phys_ub[i]]
         if use_sigma:
-            gf_,offs_,resid_ = diffreg_fpi(sr1.phys_optimum[gene_filter,i],sr2.phys_optimum[gene_filter,i],parnames[i],\
+            gf_,offs_,resid_,pval_ = diffreg_fpi(sr1.phys_optimum[gene_filter,i],sr2.phys_optimum[gene_filter,i],parnames[i],\
                              modeltype=modeltype,ax1=ax,s1=sr1.sigma[gene_filter,i],s2=sr2.sigma[gene_filter,i],nit=10,viz=viz,pval=pval)
         else:
-            gf_,offs_,resid_ = diffreg_fpi(sr1.phys_optimum[gene_filter,i],sr2.phys_optimum[gene_filter,i],parnames[i],\
+            gf_,offs_,resid_,pval_ = diffreg_fpi(sr1.phys_optimum[gene_filter,i],sr2.phys_optimum[gene_filter,i],parnames[i],\
                              modeltype=modeltype,ax1=ax,s1=None,s2=None,nit=10,viz=viz,pval=pval)
         resid_arr[gene_filter] = resid_
 
@@ -405,7 +405,7 @@ def linoffset(B, x, modeltype='id'):
     elif modeltype=='lin':
         return B[1]*x + B[0]
 
-def diffreg_fpi(m1,m2,parname,modeltype='id',ax1=None,s1=None,s2=None,nit=10,pval = 0.001,viz=True):
+def diffreg_fpi(m1,m2,parname,modeltype='id',ax1=None,s1=None,s2=None,nit=10,pval_thr = 0.001,viz=True):
     """
     This function uses the optimal physical and sampling parameters obtained for a pair of datasets
     to attempt to identify differentially regulated (DR) genes under a model of transcription, for a single parameter.
@@ -423,13 +423,14 @@ def diffreg_fpi(m1,m2,parname,modeltype='id',ax1=None,s1=None,s2=None,nit=10,pva
     s1: standard error corresponding to m1 estimates.
     s2: standard error corresponding to m2 estimates.
     nit: number of FPI iterations. to run.
-    pval: p-value threshold to use for the Z-test.
+    pval_thr: p-value threshold to use for the Z-test.
     viz: whether to plot the histograms of residuals.
 
     Output:
     gf: ndarray of size n_genes_filtered; if true, the gene has been identified as DR.
     out.beta: ndarray of size n_model_pars, contains (b) or (b,a) for the current physical parameter.
     resid: ndarray of size n_genes_filtered; contains residuals for the current physical parameter under the final fit statistical model.
+    pval: p-value under the z-test.
     """
     fs=12
     gf = np.ones(len(m1),dtype=bool)
@@ -469,7 +470,8 @@ def diffreg_fpi(m1,m2,parname,modeltype='id',ax1=None,s1=None,s2=None,nit=10,pva
                         color=aesthetics['hist_fit_color_2'],label='Initial fit')
 
         z = (resid-fitparams[0])/fitparams[1]
-        gf = np.logical_not((scipy.stats.norm.sf(np.abs(z))*2)<(pval))
+        pval = (scipy.stats.norm.sf(np.abs(z))*2)
+        gf = np.logical_not(pval<pval_thr)
         if j==(nit-1) and viz:
             n,bins = np.histogram(resid,200,density=True)
             binc = np.diff(bins)/2 + bins[:-1]
@@ -486,7 +488,7 @@ def diffreg_fpi(m1,m2,parname,modeltype='id',ax1=None,s1=None,s2=None,nit=10,pva
         ax1.set_xlabel(parname+' residual',fontsize=fs)
         ax1.set_ylabel('Density',fontsize=fs)
     gf = np.logical_not(gf)
-    return gf,out.beta,resid
+    return gf,out.beta,resid,pval
 
 def compare_gene_distributions(sr_arr,sd_arr,sz = (5,5),figsize = (10,10),\
                marg='mature',logscale=None,title=True,\
@@ -572,7 +574,7 @@ def compare_gene_distributions(sr_arr,sd_arr,sz = (5,5),figsize = (10,10),\
 
 
 def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
-                    pval=0.001,method='ttest',bonferroni=True,modeltype='lin',viz=True,knee_thr=None,
+                    pval_thr=0.001,method='ttest',bonferroni=True,modeltype='lin',viz=True,knee_thr=None,
                     fc_thr = 2):
     """
     This function attempts to identify differentially expressed (DE) genes using a simple comparison of 
@@ -587,7 +589,7 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
         None: do not do size/depth normalization.
     lognormalize: whether to use a log2-transformation for the t-test.
     pcount: pseudocount added to ensure division by zero does not occur.
-    pval: p-value threshold for proposing that a gene is DE.
+    pval_thr: p-value threshold for proposing that a gene is DE.
     method: the DE identification method to use.
         If 'ttest', use scipy.stats.ttest_ind, Welch’s t-test.
         If 'logmeanfpi', use the fixed-point iteration procedure on the distribution of log-means.
@@ -630,7 +632,7 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
             s2 = np.log2(s2+1)
         for i in range(sd1.n_genes):
             _,p = scipy.stats.ttest_ind(s1[i],s2[i],equal_var=False)
-            if p<pval:
+            if p<pval_thr:
                 gf[i] = True
         fc = s2.mean(1) - s1.mean(1)
         gf = gf & (np.abs(fc)>fc_thr)
@@ -647,12 +649,13 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
         elif method == 'meanlogfpi':
             m1 = np.log2(s1+1).mean(1)
             m2 = np.log2(s2+1).mean(1)
-        gf,offs_,resid_ = diffreg_fpi(m1,m2,'Spliced mean',\
+        gf,offs_,resid_,p = diffreg_fpi(m1,m2,'Spliced mean',\
                          modeltype=modeltype,ax1=ax1,s1=None,s2=None,nit=30,viz=viz,pval=pval)
-        gf = m2-m1
+        fc = m2-m1
         if viz: 
             pv = -np.log10(p)
             ax1.scatter(fc[gf],pv[gf],5,'r')
             ax1.scatter(fc[~gf],pv[~gf],3,'darkgray')
-
+            ax1.set_xlabel(r'Fold change ($\log_2$)')
+            ax1.set_xlabel(r'$-\log_{10} p$')
     return gf,fc
