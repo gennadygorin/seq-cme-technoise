@@ -635,7 +635,10 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
             if p_<pval_thr:
                 gf[i] = True
             p[i] = p_
-        fc = s2.mean(1) - s1.mean(1)
+        if lognormalize:
+            fc = s2.mean(1) - s1.mean(1)
+        else:
+            fc = np.log2(s1+1).mean(1) - np.log2(s2+1).mean(1)
         gf = gf & (np.abs(fc)>fc_thr)
 
         if viz: 
