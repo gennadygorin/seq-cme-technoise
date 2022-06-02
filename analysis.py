@@ -405,7 +405,7 @@ def linoffset(B, x, modeltype='id'):
     elif modeltype=='lin':
         return B[1]*x + B[0]
 
-def diffreg_fpi(m1,m2,parname,modeltype='id',ax1=None,s1=None,s2=None,nit=10,pval_thr = 0.001,viz=True):
+def diffreg_fpi(m1,m2,parname=None,modeltype='id',ax1=None,s1=None,s2=None,nit=10,pval_thr = 0.001,viz=True):
     """
     This function uses the optimal physical and sampling parameters obtained for a pair of datasets
     to attempt to identify differentially regulated (DR) genes under a model of transcription, for a single parameter.
