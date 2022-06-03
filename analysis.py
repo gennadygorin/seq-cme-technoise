@@ -297,7 +297,7 @@ def compute_diffreg(sr1,sr2,modeltype='id',gene_filter_ = None,
                      discard_rejected = True,
                      use_sigma=True,
                      figsize=None,
-                     meta = '12',viz=True,pval_thr=0.001):
+                     meta = '12',viz=True,pval_thr=0.001,nit=10):
     """
     This function uses the optimal physical and sampling parameters obtained for a pair of datasets
     to attempt to identify sources of differential regulation (DR) under a model of transcription.
@@ -319,6 +319,7 @@ def compute_diffreg(sr1,sr2,modeltype='id',gene_filter_ = None,
     meta: figure name metadata.
     viz: whether to plot the histograms of residuals.
     pval_thr: p-value threshold to use for the Z-test.
+    nit: number of FPI iterations to run.
 
     Output:
     gn: list of size n_phys_pars; each entry contains names of genes identified as DR.
@@ -360,10 +361,10 @@ def compute_diffreg(sr1,sr2,modeltype='id',gene_filter_ = None,
         # xl = [sr1.sp.phys_lb[i],sr1.sp.phys_ub[i]]
         if use_sigma:
             gf_,offs_,resid_,pval_ = diffreg_fpi(sr1.phys_optimum[gene_filter,i],sr2.phys_optimum[gene_filter,i],parnames[i],\
-                             modeltype=modeltype,ax1=ax,s1=sr1.sigma[gene_filter,i],s2=sr2.sigma[gene_filter,i],nit=10,viz=viz,pval_thr=pval_thr)
+                             modeltype=modeltype,ax1=ax,s1=sr1.sigma[gene_filter,i],s2=sr2.sigma[gene_filter,i],nit=nit,viz=viz,pval_thr=pval_thr)
         else:
             gf_,offs_,resid_,pval_ = diffreg_fpi(sr1.phys_optimum[gene_filter,i],sr2.phys_optimum[gene_filter,i],parnames[i],\
-                             modeltype=modeltype,ax1=ax,s1=None,s2=None,nit=10,viz=viz,pval_thr=pvapval_thrl)
+                             modeltype=modeltype,ax1=ax,s1=None,s2=None,nit=nit,viz=viz,pval_thr=pvapval_thrl)
         resid_arr[gene_filter] = resid_
 
         filtind = np.arange(sr1.n_genes)
@@ -422,7 +423,7 @@ def diffreg_fpi(m1,m2,parname=None,modeltype='id',ax1=None,s1=None,s2=None,nit=1
     ax1: matplotlib axes to plot into.
     s1: standard error corresponding to m1 estimates.
     s2: standard error corresponding to m2 estimates.
-    nit: number of FPI iterations. to run.
+    nit: number of FPI iterations to run.
     pval_thr: p-value threshold to use for the Z-test.
     viz: whether to plot the histograms of residuals.
 
@@ -656,7 +657,7 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
             m2 = np.log2(s2+1).mean(1)
         gf,offs_,resid_,p = diffreg_fpi(m1,m2,'Spliced mean',\
                          modeltype=modeltype,ax1=ax1,s1=None,s2=None,nit=30,viz=viz_resid,pval_thr=pval_thr)
-        fc = m2-m1
+        # fc = m2-m1
         if viz: 
             pv = -np.log10(p)
             ax1.scatter(fc[gf],pv[gf],5,'r')
