@@ -11,7 +11,6 @@ from scipy import odr
 ## Helper functions
 ########################
 
-import pickle
 def load_search_results(full_result_string):
     """
     This function attempts to load in search results.
