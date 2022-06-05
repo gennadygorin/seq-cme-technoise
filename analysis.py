@@ -618,18 +618,20 @@ def compute_diffexp(sd1,sd2,sizefactor = 'pf',lognormalize=True,pcount=0,
         gf = np.zeros(sd1.n_genes,dtype=bool)
         if bonferroni:
             pval_thr /= sd1.n_genes
-        if sizefactor is not None:
-            if sizefactor == 'pf':
-                c1 = s1.sum(0).mean()
-                c2 = s2.sum(0).mean()
-            else:
-                c1 = sizefactor
-                c2 = sizefactor
-            s1 = s1/(s1.sum(0)[None,:]+pcount)*c1
-            s2 = s2/(s2.sum(0)[None,:]+pcount)*c2
-        if lognormalize:
-            s1 = np.log2(s1+1)
-            s2 = np.log2(s2+1)
+        s1 = normalize_count_matrix(s1,sizefactor = 'pf',lognormalize=True,pcount=0,logbase=2)
+        s2 = normalize_count_matrix(s2,sizefactor = 'pf',lognormalize=True,pcount=0,logbase=2)
+        # if sizefactor is not None:
+        #     if sizefactor == 'pf':
+        #         c1 = s1.sum(0).mean()
+        #         c2 = s2.sum(0).mean()
+        #     else:
+        #         c1 = sizefactor
+        #         c2 = sizefactor
+        #     s1 = s1/(s1.sum(0)[None,:]+pcount)*c1
+        #     s2 = s2/(s2.sum(0)[None,:]+pcount)*c2
+        # if lognormalize:
+        #     s1 = np.log2(s1+1)
+        #     s2 = np.log2(s2+1)
         p = np.zeros(sd1.n_genes)
         for i in range(sd1.n_genes):
             _,p_ = scipy.stats.ttest_ind(s1[i],s2[i],equal_var=False)
